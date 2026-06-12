@@ -98,9 +98,24 @@ input,select,button,textarea{font-family:inherit}
 .tbl-wrap tr.today td{background:#EBF4FF}
 .tbl-wrap tr.today td.day-col{background:#DDEEFF}
 .tbl-wrap td.rain-val{color:var(--sky-d);font-weight:700}
+.tbl-wrap td.zero-val{color:#c8d8e8}
+.tbl-wrap td.future-val{color:#dde8f0}
+.tbl-wrap th.today-th{background:#DDEEFF;color:var(--sky-d)}
+.tbl-wrap td.today-td{background:#EBF4FF}
+.tbl-wrap .stn-col{text-align:left;min-width:80px;max-width:90px;font-size:9px;line-height:1.3}
+.tbl-wrap .stn-col small{font-weight:400;color:var(--gray)}
 .tbl-wrap tr.total-row td{background:var(--sky-lt);font-weight:700;color:var(--sky-d);border-top:1.5px solid var(--sky-bd)}
-.tbl-wrap tr.total-row td.day-col{background:var(--sky-lt)}
+.tbl-wrap tr.total-row td.stn-col{background:var(--sky-lt)}
 .tbl-hint{font-size:9px;color:var(--muted);text-align:right;margin-top:4px}
+/* avg card */
+#avg-card{background:var(--sky-lt);border-radius:var(--radius-sm);padding:10px 12px;display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+#avg-val{font-size:22px;font-weight:800;color:var(--sky-d)}
+#avg-sub{font-size:10px;color:var(--muted);margin-top:2px}
+#avg-right{text-align:right}
+#avg-max-val{font-size:14px;font-weight:700;color:var(--sky-d)}
+#avg-max-name{font-size:10px;color:var(--muted)}
+.st.max-val{background:#D4E8FF;border-color:var(--sky-d)}
+.st.max-val .sv{color:var(--sky-d)}
 
 /* ══ FORM ══════════════════════════════════════════════════ */
 .fg{margin-bottom:10px}
@@ -223,9 +238,9 @@ const STATIONS = [
   {code:'WS#1', name:'Office'},   {code:'WS#2', name:'M2'},
   {code:'WS#3', name:'C2-JF2'},   {code:'WS#4', name:'IRR-A2'},
   {code:'WS#5', name:'T4S'},      {code:'WS#6', name:'T2SW'},
-  {code:'WS#8', name:'M4(P9)'},   {code:'WS#15',name:'CNBD1'},
+  {code:'WS#8', name:'M4(P9)'},   {code:'WS#15',name:'CNBD1 Gate'},
   {code:'WS#16',name:'T4N'},      {code:'WS#9', name:'A3'},
-  {code:'WS#17',name:'A2/C2'},
+  {code:'WS#17',name:'A2/C2 PPA'},
 ];
 const MONTHS_TH = ['','ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
 const MONTHS_FULL = ['','มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
@@ -276,6 +291,17 @@ function getUserName(){ return localStorage.getItem('rfUser')||'' }
     <div class="card">
       <div class="sec-title">🌡️ ปริมาณน้ำฝนวันล่าสุด</div>
       <div id="latest-date-badge" class="date-badge">📅 กำลังโหลด...</div>
+      <div id="avg-card" style="display:none">
+        <div>
+          <div id="avg-val">— mm</div>
+          <div id="avg-sub">เฉลี่ยทุกสถานี</div>
+        </div>
+        <div id="avg-right">
+          <div style="font-size:10px;color:var(--muted)">สูงสุด</div>
+          <div id="avg-max-val">— mm</div>
+          <div id="avg-max-name">—</div>
+        </div>
+      </div>
       <div id="station-grid" class="st-grid">
         <div class="loading"><div class="spinner"></div><span>กำลังโหลด...</span></div>
       </div>
@@ -413,7 +439,7 @@ function getUserName(){ return localStorage.getItem('rfUser')||'' }
       <div class="card">
         <div class="sec-title">📊 Google Sheet</div>
         <p style="font-size:12px;color:var(--sky-m);margin-bottom:6px">ข้อมูลทั้งหมดซิงค์ที่:</p>
-        <a href="https://drive.google.com/file/d/1Jhp3KCOr2GYU4kLaZru4EBpbE04KLa4H/view"
+        <a href="https://docs.google.com/spreadsheets/d/1bgFIKyiPiTKFln7YkWAsRiXg8UTMJR4ft6i4YlfruJ8/edit"
            target="_blank" style="color:var(--sky-d);font-size:12px;font-weight:600">
           📄 Rainfall Record ↗
         </a>
@@ -581,7 +607,6 @@ async function refreshAll() {
 // DASHBOARD — Latest day tiles
 // ═══════════════════════════════════════════════════════════
 function renderLatestDay(data) {
-  // Date badge
   const badge = document.getElementById('latest-date-badge');
   if (data.date) {
     const [y, m, d] = data.date.split('-');
@@ -590,15 +615,30 @@ function renderLatestDay(data) {
     badge.textContent = '📅 ยังไม่มีข้อมูล';
   }
 
-  // Tiles
   const grid = document.getElementById('station-grid');
+  const avgCard = document.getElementById('avg-card');
+
   if (!data.summary || !data.summary.length) {
     grid.innerHTML = '<div style="grid-column:1/-1" class="empty-state">ยังไม่มีข้อมูล</div>';
+    avgCard.style.display = 'none';
     return;
   }
+
+  // Average & max (only stations reporting > 0)
+  const withRain = data.summary.filter(s => s.total_mm > 0);
+  const avg = withRain.length ? withRain.reduce((s,r) => s + r.total_mm, 0) / withRain.length : 0;
+  const maxS = data.summary.reduce((a,b) => a.total_mm >= b.total_mm ? a : b, {total_mm:0,code:'',name:''});
+
+  avgCard.style.display = 'flex';
+  document.getElementById('avg-val').textContent     = avg.toFixed(1) + ' mm';
+  document.getElementById('avg-sub').textContent     = `เฉลี่ยจาก ${withRain.length} สถานีที่รายงาน > 0`;
+  document.getElementById('avg-max-val').textContent = maxS.total_mm.toFixed(1) + ' mm';
+  document.getElementById('avg-max-name').textContent= `${maxS.code} ${maxS.name}`;
+
   grid.innerHTML = data.summary.map(s => {
     const hasRain = s.total_mm > 0;
-    const cls = hasRain ? 'rain' : 'zero';
+    const isMax   = hasRain && s.total_mm === maxS.total_mm;
+    const cls     = isMax ? 'rain max-val' : hasRain ? 'rain' : 'zero';
     return `<div class="st ${cls}">
       <div class="sc">${s.code}</div>
       <div class="sn">${s.name}</div>
@@ -609,61 +649,65 @@ function renderLatestDay(data) {
 }
 
 // ═══════════════════════════════════════════════════════════
-// DASHBOARD — Monthly table
+// DASHBOARD — Monthly table (stations=rows, days=cols)
 // ═══════════════════════════════════════════════════════════
 function renderMonthlyTable(data) {
   const { year, month, days, stations, matrix, totals } = data;
-  const today = new Date().toISOString().slice(0,10);
-  const prefix = `${year}-${String(month).padStart(2,'0')}-`;
+  const todayStr = new Date().toISOString().slice(0,10);
+  const prefix   = `${year}-${String(month).padStart(2,'0')}-`;
+  const lastDay  = new Date(year, month, 0).getDate();
 
   document.getElementById('monthly-title').textContent =
     `📅 ตารางน้ำฝนรายวัน — ${MONTHS_FULL[month]} ${year+543}`;
 
-  // Filter days that have any data
-  const activeDays = days.filter(d => {
-    const row = matrix[d];
-    if (!row) return false;
-    return stations.some(s => (row[s.code]||0) > 0);
-  });
-
-  if (!activeDays.length) {
-    document.getElementById('monthly-table-wrap').innerHTML =
-      '<div class="empty-state">ยังไม่มีข้อมูลในเดือนนี้</div>';
-    document.getElementById('tbl-hint').textContent = '';
-    return;
-  }
-
-  // Short code labels
-  const codes = stations.map(s => s.code.replace('WS#',''));
+  // Build lookup: day number → matrix key
+  const dayKeys = {};
+  (days||[]).forEach(d => { dayKeys[parseInt(d)] = d; });
 
   let html = `<table><thead><tr>
-    <th class="day-col">วัน</th>
-    ${stations.map((s,i) => `<th title="${s.code} ${s.name}">${codes[i]}</th>`).join('')}
+    <th class="day-col stn-col">สถานี</th>
+    ${Array.from({length:lastDay},(_,i) => {
+      const n = i+1;
+      const full = prefix + String(n).padStart(2,'0');
+      const isToday = full === todayStr;
+      return `<th${isToday?' class="today-th"':''}>${n}${isToday?'▶':''}</th>`;
+    }).join('')}
+    <th>รวม</th>
   </tr></thead><tbody>`;
 
-  activeDays.forEach(d => {
-    const fullDate = prefix + d;
-    const isToday = fullDate === today;
-    const row = matrix[d] || {};
-    html += `<tr class="${isToday ? 'today' : ''}">
-      <td class="day-col">${parseInt(d)}${isToday ? '▶' : ''}</td>
-      ${stations.map(s => {
-        const v = row[s.code]||0;
-        return `<td class="${v>0?'rain-val':''}">${v>0 ? v.toFixed(1) : '—'}</td>`;
-      }).join('')}
-    </tr>`;
+  stations.forEach(s => {
+    html += `<tr><td class="day-col stn-col">${s.code}<br><small>${s.name}</small></td>`;
+    for (let n = 1; n <= lastDay; n++) {
+      const full    = prefix + String(n).padStart(2,'0');
+      const isFuture = full > todayStr;
+      const key     = dayKeys[n];
+      const row     = key !== undefined ? matrix[key] : null;
+      const val     = row ? (row[s.code] ?? null) : null;
+      const isTodayCol = full === todayStr;
+      const tdCls   = isTodayCol ? ' class="today-td"' : '';
+      if (isFuture)        html += `<td${tdCls} class="future-val">—</td>`;
+      else if (val === null) html += `<td${tdCls}>—</td>`;
+      else if (val === 0)    html += `<td${tdCls} class="zero-val">0</td>`;
+      else                   html += `<td${tdCls} class="rain-val">${parseFloat(val).toFixed(1)}</td>`;
+    }
+    const tot = (totals && totals[s.code]) || 0;
+    html += `<td class="rain-val">${tot > 0 ? tot.toFixed(1) : '0'}</td></tr>`;
   });
 
-  // Total row
-  html += `<tr class="total-row">
-    <td class="day-col">รวม</td>
-    ${stations.map(s => `<td>${totals[s.code]>0 ? totals[s.code].toFixed(1) : '0'}</td>`).join('')}
-  </tr>`;
+  html += `<tr class="total-row"><td class="day-col stn-col">รวม</td>`;
+  for (let n = 1; n <= lastDay; n++) {
+    const full = prefix + String(n).padStart(2,'0');
+    const key  = dayKeys[n];
+    const row  = key !== undefined ? matrix[key] : null;
+    const dayTotal = row ? stations.reduce((s,st) => s + (row[st.code]||0), 0) : 0;
+    html += `<td>${dayTotal > 0 ? dayTotal.toFixed(1) : ''}</td>`;
+  }
+  const grandTotal = stations.reduce((s,st) => s + ((totals && totals[st.code])||0), 0);
+  html += `<td>${grandTotal > 0 ? grandTotal.toFixed(1) : '0'}</td></tr>`;
 
   html += '</tbody></table>';
   document.getElementById('monthly-table-wrap').innerHTML = html;
-  document.getElementById('tbl-hint').textContent =
-    `▶ = วันนี้  ·  ${stations.map((s,i)=>codes[i]+'='+s.code.replace('WS#','WS')).slice(0,4).join('  ')} ...`;
+  document.getElementById('tbl-hint').textContent = '▶ = วันนี้  ·  เลื่อนซ้าย-ขวาเพื่อดูทุกวัน';
 }
 
 // ═══════════════════════════════════════════════════════════
