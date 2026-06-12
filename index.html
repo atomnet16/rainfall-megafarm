@@ -117,6 +117,43 @@ input,select,button,textarea{font-family:inherit}
 .st.max-val{background:#D4E8FF;border-color:var(--sky-d)}
 .st.max-val .sv{color:var(--sky-d)}
 
+/* ══ MONTH NAV ═══════════════════════════════════════════════ */
+.month-nav{display:flex;align-items:center;gap:6px;margin-bottom:10px;flex-wrap:wrap}
+.nav-arr{background:var(--sky-lt);border:1px solid var(--sky-bd);color:var(--sky-d);border-radius:6px;width:28px;height:28px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;line-height:1}
+.nav-arr:active{background:var(--sky-bd)}
+.month-nav select{flex:1;min-width:80px;border:1.5px solid var(--sky-bd);border-radius:var(--radius-sm);padding:5px 6px;font-size:12px;color:var(--text);background:#fff}
+.btn-today{background:var(--sky);color:#fff;border:none;border-radius:6px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap}
+.btn-today:active{background:var(--sky-d)}
+.tbl-wrap .sum-th{background:#D4E8FF;color:var(--sky-d);min-width:38px;line-height:1.3}
+.tbl-wrap .sum-td{background:var(--sky-lt);color:var(--sky-d);font-weight:700}
+.tbl-wrap .rain-days-td{background:#E6F1FB;color:var(--sky-d);font-weight:700;font-size:10px;white-space:nowrap}
+
+/* ══ COMPARE ═════════════════════════════════════════════════ */
+.cmp-slots{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.cmp-slot{border:1.5px solid var(--sky-bd);border-radius:var(--radius-sm);padding:8px 10px}
+.cmp-slot.slot-a{border-color:var(--sky)}
+.cmp-slot.slot-b{border-color:var(--sky-9)}
+.cmp-slot-label{font-size:10px;font-weight:700;margin-bottom:5px}
+.slot-a .cmp-slot-label{color:var(--sky-d)}
+.slot-b .cmp-slot-label{color:var(--sky-m)}
+.cmp-slot select{width:100%;border:1px solid var(--sky-bd);border-radius:5px;padding:4px 5px;font-size:11px;color:var(--text);background:#fff;margin-top:3px}
+.ctab-row{display:flex;gap:6px;margin:10px 0 8px}
+.ctab{flex:1;background:var(--sky-lt);border:1px solid var(--sky-bd);color:var(--sky-m);border-radius:6px;padding:6px 4px;font-size:11px;font-weight:600;cursor:pointer;text-align:center}
+.ctab.act{background:var(--sky);color:#fff;border-color:var(--sky)}
+.cbar-row{display:flex;align-items:center;gap:6px;margin-bottom:6px}
+.cbar-stn{font-size:9px;font-weight:700;color:var(--sky-d);width:64px;text-align:right;flex-shrink:0;line-height:1.3}
+.cbar-stn small{font-weight:400;color:var(--muted)}
+.cbar-col{flex:1;display:flex;flex-direction:column;gap:2px}
+.cbar-bg{background:var(--sky-lt);border-radius:3px;height:11px;overflow:hidden}
+.cbar-a{height:11px;background:var(--sky);border-radius:3px}
+.cbar-b{height:11px;background:var(--sky-9);border-radius:3px}
+.cbar-vals{font-size:10px;width:60px;display:flex;flex-direction:column;gap:1px;flex-shrink:0}
+.val-a{color:var(--sky-d);font-weight:700}
+.val-b{color:var(--muted)}
+.cmp-legend{display:flex;gap:14px;margin-top:8px;flex-wrap:wrap}
+.leg-item{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--gray)}
+.leg-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+
 /* ══ FORM ══════════════════════════════════════════════════ */
 .fg{margin-bottom:10px}
 .fl{display:block;font-size:11px;font-weight:600;color:var(--sky-m);margin-bottom:4px}
@@ -309,10 +346,47 @@ function getUserName(){ return localStorage.getItem('rfUser')||'' }
 
     <div class="card">
       <div class="sec-title" id="monthly-title">📅 ตารางน้ำฝนรายวัน</div>
+      <div class="month-nav">
+        <button class="nav-arr" onclick="navMonth(-1)">‹</button>
+        <select id="sel-month" onchange="onMonthSelChange()"></select>
+        <select id="sel-year" onchange="onMonthSelChange()"></select>
+        <button class="nav-arr" onclick="navMonth(1)">›</button>
+        <button class="btn-today" onclick="goToday()">ปัจจุบัน</button>
+      </div>
       <div class="tbl-wrap" id="monthly-table-wrap">
         <div class="loading"><div class="spinner"></div><span>กำลังโหลด...</span></div>
       </div>
       <div class="tbl-hint" id="tbl-hint"></div>
+    </div>
+
+    <div class="card">
+      <div class="sec-title">⚖️ เปรียบเทียบข้อมูล</div>
+      <div class="cmp-slots">
+        <div class="cmp-slot slot-a">
+          <div class="cmp-slot-label">ชุด A</div>
+          <select id="cmp-ma"></select>
+          <select id="cmp-ya"></select>
+        </div>
+        <div class="cmp-slot slot-b">
+          <div class="cmp-slot-label">ชุด B</div>
+          <select id="cmp-mb"></select>
+          <select id="cmp-yb"></select>
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="runCompare()" style="padding:10px;margin-bottom:2px">
+        🔍 เปรียบเทียบ
+      </button>
+      <div class="ctab-row">
+        <button class="ctab act" data-tab="mm" onclick="setCmpTab('mm')">ปริมาณรวม (mm)</button>
+        <button class="ctab" data-tab="days" onclick="setCmpTab('days')">วันฝนตก (วัน)</button>
+      </div>
+      <div id="cmp-result">
+        <div class="empty-state" style="padding:20px">เลือกชุดข้อมูล แล้วกด เปรียบเทียบ</div>
+      </div>
+      <div class="cmp-legend" id="cmp-legend" style="display:none">
+        <div class="leg-item"><div class="leg-dot" style="background:var(--sky)"></div><span id="cmp-legend-a">ชุด A</span></div>
+        <div class="leg-item"><div class="leg-dot" style="background:var(--sky-9)"></div><span id="cmp-legend-b">ชุด B</span></div>
+      </div>
     </div>
 
   </div>
@@ -493,10 +567,14 @@ function getUserName(){ return localStorage.getItem('rfUser')||'' }
 // STATE
 // ═══════════════════════════════════════════════════════════
 let pinBuffer = '';
-let pinCallback = null;    // fn(pin) called on confirm
+let pinCallback = null;
 let pendingDeleteId = null;
 let pendingDeleteEl = null;
 let autoRefreshTimer = null;
+let viewYear  = new Date().getFullYear();
+let viewMonth = new Date().getMonth() + 1;
+let cmpTab    = 'mm';
+let cmpDataA  = null, cmpDataB = null;
 
 // ═══════════════════════════════════════════════════════════
 // INIT
@@ -524,6 +602,8 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('f-date').value = now.toISOString().slice(0,10);
   document.getElementById('f-time').value = now.toTimeString().slice(0,5);
 
+  initMonthSelectors();
+  initCompareSelectors();
   checkCfgBanner();
   refreshAll();
   startAutoRefresh();
@@ -586,10 +666,9 @@ async function apiPost(body) {
 async function refreshAll() {
   document.getElementById('last-update').textContent = 'กำลังอัปเดต...';
   try {
-    const now = new Date();
     const [latestData, monthlyData] = await Promise.all([
       apiFetch({ action: 'getLatestDay' }),
-      apiFetch({ action: 'getMonthly', year: now.getFullYear(), month: now.getMonth()+1 })
+      apiFetch({ action: 'getMonthly', year: viewYear, month: viewMonth })
     ]);
     renderLatestDay(latestData);
     renderMonthlyTable(monthlyData);
@@ -649,65 +728,232 @@ function renderLatestDay(data) {
 }
 
 // ═══════════════════════════════════════════════════════════
+// MONTH NAV
+// ═══════════════════════════════════════════════════════════
+function initMonthSelectors() {
+  const selM = document.getElementById('sel-month');
+  const selY = document.getElementById('sel-year');
+  MONTHS_FULL.slice(1).forEach((m,i) => {
+    const o = document.createElement('option');
+    o.value = i+1; o.textContent = m; selM.appendChild(o);
+  });
+  const curY = new Date().getFullYear();
+  for (let y = curY; y >= 2025; y--) {
+    const o = document.createElement('option');
+    o.value = y; o.textContent = y+543; selY.appendChild(o);
+  }
+  selM.value = viewMonth; selY.value = viewYear;
+}
+
+function syncMonthSelectors() {
+  document.getElementById('sel-month').value = viewMonth;
+  document.getElementById('sel-year').value  = viewYear;
+}
+
+function navMonth(dir) {
+  viewMonth += dir;
+  if (viewMonth > 12) { viewMonth = 1; viewYear++; }
+  if (viewMonth < 1)  { viewMonth = 12; viewYear--; }
+  if (viewYear < 2025) { viewYear = 2025; viewMonth = 1; }
+  syncMonthSelectors();
+  loadMonthly();
+}
+
+function onMonthSelChange() {
+  viewMonth = parseInt(document.getElementById('sel-month').value);
+  viewYear  = parseInt(document.getElementById('sel-year').value);
+  loadMonthly();
+}
+
+function goToday() {
+  const now = new Date();
+  viewYear = now.getFullYear(); viewMonth = now.getMonth()+1;
+  syncMonthSelectors(); loadMonthly();
+}
+
+async function loadMonthly() {
+  document.getElementById('monthly-table-wrap').innerHTML =
+    '<div class="loading"><div class="spinner"></div><span>กำลังโหลด...</span></div>';
+  try {
+    const data = await apiFetch({ action:'getMonthly', year:viewYear, month:viewMonth });
+    renderMonthlyTable(data);
+  } catch(err) {
+    document.getElementById('monthly-table-wrap').innerHTML =
+      `<div class="empty-state" style="color:#E53935">⚠️ ${err.message}</div>`;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
 // DASHBOARD — Monthly table (stations=rows, days=cols)
 // ═══════════════════════════════════════════════════════════
 function renderMonthlyTable(data) {
   const { year, month, days, stations, matrix, totals } = data;
-  const todayStr = new Date().toISOString().slice(0,10);
-  const prefix   = `${year}-${String(month).padStart(2,'0')}-`;
-  const lastDay  = new Date(year, month, 0).getDate();
+  const todayStr   = new Date().toISOString().slice(0,10);
+  const prefix     = `${year}-${String(month).padStart(2,'0')}-`;
+  const lastDay    = new Date(year, month, 0).getDate();
+  const isCurMonth = (year === new Date().getFullYear() && month === new Date().getMonth()+1);
 
   document.getElementById('monthly-title').textContent =
     `📅 ตารางน้ำฝนรายวัน — ${MONTHS_FULL[month]} ${year+543}`;
 
-  // Build lookup: day number → matrix key
   const dayKeys = {};
   (days||[]).forEach(d => { dayKeys[parseInt(d)] = d; });
+
+  // Rain days per station
+  const rainDays = {};
+  stations.forEach(s => {
+    rainDays[s.code] = 0;
+    for (let n = 1; n <= lastDay; n++) {
+      const full = prefix + String(n).padStart(2,'0');
+      if (isCurMonth && full > todayStr) continue;
+      const key = dayKeys[n]; const row = key !== undefined ? matrix[key] : null;
+      if (row && (row[s.code]||0) > 0) rainDays[s.code]++;
+    }
+  });
 
   let html = `<table><thead><tr>
     <th class="day-col stn-col">สถานี</th>
     ${Array.from({length:lastDay},(_,i) => {
-      const n = i+1;
-      const full = prefix + String(n).padStart(2,'0');
+      const n = i+1, full = prefix + String(n).padStart(2,'0');
       const isToday = full === todayStr;
       return `<th${isToday?' class="today-th"':''}>${n}${isToday?'▶':''}</th>`;
     }).join('')}
-    <th>รวม</th>
+    <th class="sum-th">รวม<br>mm</th>
+    <th class="sum-th">วันฝน<br>ตก</th>
   </tr></thead><tbody>`;
 
   stations.forEach(s => {
     html += `<tr><td class="day-col stn-col">${s.code}<br><small>${s.name}</small></td>`;
     for (let n = 1; n <= lastDay; n++) {
-      const full    = prefix + String(n).padStart(2,'0');
-      const isFuture = full > todayStr;
-      const key     = dayKeys[n];
-      const row     = key !== undefined ? matrix[key] : null;
-      const val     = row ? (row[s.code] ?? null) : null;
-      const isTodayCol = full === todayStr;
-      const tdCls   = isTodayCol ? ' class="today-td"' : '';
-      if (isFuture)        html += `<td${tdCls} class="future-val">—</td>`;
-      else if (val === null) html += `<td${tdCls}>—</td>`;
-      else if (val === 0)    html += `<td${tdCls} class="zero-val">0</td>`;
-      else                   html += `<td${tdCls} class="rain-val">${parseFloat(val).toFixed(1)}</td>`;
+      const full = prefix + String(n).padStart(2,'0');
+      const isFuture = isCurMonth && full > todayStr;
+      const key = dayKeys[n]; const row = key !== undefined ? matrix[key] : null;
+      const val = row ? (row[s.code] ?? null) : null;
+      const tc  = full === todayStr ? ' today-td' : '';
+      if (isFuture)          html += `<td class="future-val${tc}">—</td>`;
+      else if (val === null)  html += `<td class="${tc}">—</td>`;
+      else if (val === 0)     html += `<td class="zero-val${tc}">0</td>`;
+      else                    html += `<td class="rain-val${tc}">${parseFloat(val).toFixed(1)}</td>`;
     }
     const tot = (totals && totals[s.code]) || 0;
-    html += `<td class="rain-val">${tot > 0 ? tot.toFixed(1) : '0'}</td></tr>`;
+    html += `<td class="sum-td">${tot > 0 ? tot.toFixed(1) : '0'}</td>`;
+    html += `<td class="rain-days-td">${rainDays[s.code]} วัน</td></tr>`;
   });
 
-  html += `<tr class="total-row"><td class="day-col stn-col">รวม</td>`;
+  // Total row
+  html += `<tr class="total-row"><td class="day-col stn-col" style="font-weight:700;font-size:10px">รวมทุกสถานี</td>`;
+  let grandTotal = 0;
   for (let n = 1; n <= lastDay; n++) {
     const full = prefix + String(n).padStart(2,'0');
-    const key  = dayKeys[n];
-    const row  = key !== undefined ? matrix[key] : null;
-    const dayTotal = row ? stations.reduce((s,st) => s + (row[st.code]||0), 0) : 0;
-    html += `<td>${dayTotal > 0 ? dayTotal.toFixed(1) : ''}</td>`;
+    const key  = dayKeys[n]; const row = key !== undefined ? matrix[key] : null;
+    const daySum = row ? stations.reduce((s,st) => s+(row[st.code]||0), 0) : 0;
+    grandTotal += daySum;
+    const tc = full === todayStr ? ' today-td' : '';
+    html += `<td class="${tc}">${daySum > 0 ? daySum.toFixed(1) : ''}</td>`;
   }
-  const grandTotal = stations.reduce((s,st) => s + ((totals && totals[st.code])||0), 0);
-  html += `<td>${grandTotal > 0 ? grandTotal.toFixed(1) : '0'}</td></tr>`;
+  const avgDays = Math.round(stations.reduce((s,st)=>s+rainDays[st.code],0)/stations.length);
+  html += `<td class="sum-td">${grandTotal > 0 ? grandTotal.toFixed(1) : '0'}</td>`;
+  html += `<td class="rain-days-td">เฉลี่ย<br>${avgDays} วัน</td></tr>`;
 
   html += '</tbody></table>';
   document.getElementById('monthly-table-wrap').innerHTML = html;
   document.getElementById('tbl-hint').textContent = '▶ = วันนี้  ·  เลื่อนซ้าย-ขวาเพื่อดูทุกวัน';
+}
+
+// ═══════════════════════════════════════════════════════════
+// COMPARE
+// ═══════════════════════════════════════════════════════════
+function initCompareSelectors() {
+  ['cmp-ma','cmp-mb'].forEach(id => {
+    const sel = document.getElementById(id);
+    MONTHS_FULL.slice(1).forEach((m,i) => {
+      const o = document.createElement('option');
+      o.value = i+1; o.textContent = m; sel.appendChild(o);
+    });
+  });
+  const curY = new Date().getFullYear();
+  ['cmp-ya','cmp-yb'].forEach(id => {
+    const sel = document.getElementById(id);
+    for (let y = curY; y >= 2025; y--) {
+      const o = document.createElement('option');
+      o.value = y; o.textContent = y+543; sel.appendChild(o);
+    }
+  });
+  const now = new Date();
+  document.getElementById('cmp-ma').value = now.getMonth()+1;
+  document.getElementById('cmp-ya').value = now.getFullYear();
+  const lm = now.getMonth()===0 ? 12 : now.getMonth();
+  const ly = now.getMonth()===0 ? now.getFullYear()-1 : now.getFullYear();
+  document.getElementById('cmp-mb').value = lm;
+  document.getElementById('cmp-yb').value = ly;
+}
+
+function setCmpTab(t) {
+  cmpTab = t;
+  document.querySelectorAll('.ctab').forEach(el =>
+    el.classList.toggle('act', el.dataset.tab === t));
+  if (cmpDataA && cmpDataB) renderCompare();
+}
+
+async function runCompare() {
+  const yA = parseInt(document.getElementById('cmp-ya').value);
+  const mA = parseInt(document.getElementById('cmp-ma').value);
+  const yB = parseInt(document.getElementById('cmp-yb').value);
+  const mB = parseInt(document.getElementById('cmp-mb').value);
+  document.getElementById('cmp-result').innerHTML =
+    '<div class="loading"><div class="spinner"></div><span>กำลังโหลด...</span></div>';
+  try {
+    [cmpDataA, cmpDataB] = await Promise.all([
+      apiFetch({ action:'getMonthly', year:yA, month:mA }),
+      apiFetch({ action:'getMonthly', year:yB, month:mB })
+    ]);
+    document.getElementById('cmp-legend-a').textContent = `ชุด A: ${MONTHS_TH[mA]} ${yA+543}`;
+    document.getElementById('cmp-legend-b').textContent = `ชุด B: ${MONTHS_TH[mB]} ${yB+543}`;
+    document.getElementById('cmp-legend').style.display = 'flex';
+    renderCompare();
+  } catch(err) {
+    document.getElementById('cmp-result').innerHTML =
+      `<div class="empty-state" style="color:#E53935">⚠️ ${err.message}</div>`;
+  }
+}
+
+function calcMonthStats(data) {
+  const { year, month, days, stations, matrix, totals } = data;
+  const lastDay = new Date(year, month, 0).getDate();
+  const prefix  = `${year}-${String(month).padStart(2,'0')}-`;
+  const dayKeys = {};
+  (days||[]).forEach(d => { dayKeys[parseInt(d)] = d; });
+  const rainDays = {};
+  stations.forEach(s => {
+    rainDays[s.code] = 0;
+    for (let n = 1; n <= lastDay; n++) {
+      const key = dayKeys[n]; const row = key !== undefined ? matrix[key] : null;
+      if (row && (row[s.code]||0) > 0) rainDays[s.code]++;
+    }
+  });
+  return { totals: totals||{}, rainDays };
+}
+
+function renderCompare() {
+  const stations = cmpDataA.stations;
+  const sA = calcMonthStats(cmpDataA), sB = calcMonthStats(cmpDataB);
+  const getVal = (s, st) => cmpTab==='mm' ? (s.totals[st.code]||0) : s.rainDays[st.code];
+  const maxVal = Math.max(...stations.flatMap(st => [getVal(sA,st), getVal(sB,st)]), 1);
+  let html = '';
+  stations.forEach(st => {
+    const vA = getVal(sA,st), vB = getVal(sB,st);
+    const pA = Math.round(vA/maxVal*100), pB = Math.round(vB/maxVal*100);
+    const fmt = v => cmpTab==='mm' ? v.toFixed(1) : v+' วัน';
+    html += `<div class="cbar-row">
+      <div class="cbar-stn">${st.code}<br><small>${st.name}</small></div>
+      <div class="cbar-col">
+        <div class="cbar-bg"><div class="cbar-a" style="width:${pA}%"></div></div>
+        <div class="cbar-bg"><div class="cbar-b" style="width:${pB}%"></div></div>
+      </div>
+      <div class="cbar-vals"><span class="val-a">${fmt(vA)}</span><span class="val-b">${fmt(vB)}</span></div>
+    </div>`;
+  });
+  document.getElementById('cmp-result').innerHTML = html;
 }
 
 // ═══════════════════════════════════════════════════════════
