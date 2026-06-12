@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>🌧 Mega Farm — Rainfall</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+/* ══ RESET & TOKENS ══════════════════════════════════════════ */
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --sky:#7BA7D4;       --sky-d:#2E5F8A;    --sky-m:#5585B5;
+  --sky-bg:#F0F6FF;    --sky-lt:#E4EFF9;   --sky-bd:#B8D4EE;
+  --sky-tile:#E8F2FF;  --sky-9:#9DC0E8;
+  --white:#fff;        --text:#1A3A52;      --gray:#6B7E8F;     --muted:#7AAAD0;
+  --red:#E53935;       --red-lt:#FFEBEE;    --red-dk:#B71C1C;
+  --green:#2E7D32;     --green-lt:#E8F5E9;
+  --radius:10px;       --radius-sm:7px;
+  --shadow:0 2px 10px rgba(123,167,212,.18);
+  --hdr-h:56px;        --nav-h:46px;
+}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--sky-bg);color:var(--text);min-height:100vh}
+input,select,button,textarea{font-family:inherit}
+
+/* ══ HEADER ════════════════════════════════════════════════ */
+#hdr{
+  position:fixed;top:0;left:0;right:0;z-index:200;
+  height:var(--hdr-h);background:var(--sky);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 14px;box-shadow:0 2px 8px rgba(0,0,0,.15);
+}
+#hdr-left h1{font-size:14px;font-weight:700;color:#fff;line-height:1.2}
+#hdr-date{font-size:10px;color:rgba(255,255,255,.82);margin-top:2px}
+#live-dot{
+  display:inline-block;width:7px;height:7px;border-radius:50%;
+  background:#4CAF50;margin-right:5px;animation:pulse 2s infinite;
+}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+#hdr-right{display:flex;align-items:center;gap:8px}
+#refresh-btn{
+  background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.35);
+  color:#fff;border-radius:6px;padding:5px 10px;font-size:11px;cursor:pointer;
+}
+#refresh-btn:active{background:rgba(255,255,255,.32)}
+#last-update{font-size:9px;color:rgba(255,255,255,.7);text-align:right}
+
+/* ══ NAV TABS ══════════════════════════════════════════════ */
+#nav{
+  position:fixed;top:var(--hdr-h);left:0;right:0;z-index:199;
+  height:var(--nav-h);background:#fff;
+  display:flex;border-bottom:2px solid var(--sky-lt);
+  box-shadow:0 1px 4px rgba(0,0,0,.06);
+}
+#nav button{
+  flex:1;border:none;background:none;color:var(--gray);
+  font-size:11px;font-weight:600;cursor:pointer;
+  border-bottom:3px solid transparent;transition:.15s;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;
+}
+#nav button .nav-icon{font-size:16px;line-height:1}
+#nav button.act{color:var(--sky-d);border-bottom-color:var(--sky)}
+
+/* ══ MAIN ══════════════════════════════════════════════════ */
+#main{margin-top:calc(var(--hdr-h) + var(--nav-h));padding:12px;max-width:600px;margin-left:auto;margin-right:auto}
+.page{display:none}
+.page.act{display:block}
+
+/* ══ CARDS ═════════════════════════════════════════════════ */
+.card{background:#fff;border-radius:var(--radius);border:1px solid var(--sky-bd);padding:12px;margin-bottom:12px;box-shadow:var(--shadow)}
+.sec-title{font-size:10px;font-weight:700;color:var(--sky-m);letter-spacing:.6px;text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:5px}
+.date-badge{display:inline-flex;align-items:center;gap:5px;background:var(--sky-lt);color:var(--sky-d);padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;margin-bottom:10px}
+
+/* ══ STATION TILES ═════════════════════════════════════════ */
+.st-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:2px}
+@media(min-width:420px){.st-grid{grid-template-columns:repeat(4,1fr)}}
+.st{background:#fff;border-radius:8px;padding:8px 5px;text-align:center;border:1px solid var(--sky-bd);transition:.2s}
+.st.rain{background:var(--sky-tile);border-color:var(--sky-9)}
+.st .sc{font-size:8px;color:var(--muted);font-weight:600}
+.st .sn{font-size:8px;font-weight:700;color:var(--sky-d);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.st .sv{font-size:18px;font-weight:800;color:var(--sky);line-height:1.1;margin:3px 0 1px}
+.st.rain .sv{color:var(--sky-d)}
+.st.zero .sv{color:#c8d8e8}
+.st .su{font-size:8px;color:var(--muted)}
+
+/* ══ MONTHLY TABLE ═════════════════════════════════════════ */
+.tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:-4px}
+.tbl-wrap table{border-collapse:collapse;font-size:10px;white-space:nowrap}
+.tbl-wrap th{
+  background:var(--sky-lt);color:var(--sky-d);padding:5px 6px;
+  font-weight:700;text-align:center;position:sticky;top:0;border-bottom:1.5px solid var(--sky-bd);
+}
+.tbl-wrap th.day-col{position:sticky;left:0;z-index:2;background:var(--sky-lt)}
+.tbl-wrap td{padding:4px 5px;text-align:center;border-bottom:.5px solid #EAF2FB;color:var(--gray)}
+.tbl-wrap td.day-col{
+  position:sticky;left:0;background:#fff;font-weight:700;color:var(--sky-d);
+  border-right:1.5px solid var(--sky-bd);z-index:1;text-align:center
+}
+.tbl-wrap tr.today td{background:#EBF4FF}
+.tbl-wrap tr.today td.day-col{background:#DDEEFF}
+.tbl-wrap td.rain-val{color:var(--sky-d);font-weight:700}
+.tbl-wrap tr.total-row td{background:var(--sky-lt);font-weight:700;color:var(--sky-d);border-top:1.5px solid var(--sky-bd)}
+.tbl-wrap tr.total-row td.day-col{background:var(--sky-lt)}
+.tbl-hint{font-size:9px;color:var(--muted);text-align:right;margin-top:4px}
+
+/* ══ FORM ══════════════════════════════════════════════════ */
+.fg{margin-bottom:10px}
+.fl{display:block;font-size:11px;font-weight:600;color:var(--sky-m);margin-bottom:4px}
+.fi{
+  width:100%;border:1.5px solid var(--sky-bd);border-radius:var(--radius-sm);
+  padding:9px 11px;font-size:14px;color:var(--text);background:#fff;transition:.2s;
+}
+.fi:focus{outline:none;border-color:var(--sky);box-shadow:0 0 0 3px rgba(123,167,212,.18)}
+.fi-lg{font-size:20px;font-weight:700;letter-spacing:1px}
+.fgrid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.mm-wrap{position:relative}
+.mm-wrap .fi{padding-right:36px}
+.mm-unit{position:absolute;right:11px;top:50%;transform:translateY(-50%);font-size:12px;color:var(--muted);font-weight:600}
+
+/* ══ BUTTONS ═══════════════════════════════════════════════ */
+.btn{border:none;border-radius:var(--radius-sm);font-weight:700;cursor:pointer;transition:.15s;font-size:13px}
+.btn:active{filter:brightness(.92)}
+.btn-primary{background:var(--sky);color:#fff;width:100%;padding:13px}
+.btn-danger{background:var(--red);color:#fff}
+.btn-ghost{background:var(--sky-lt);color:var(--sky-d);border:1px solid var(--sky-bd)}
+.btn-sm{font-size:11px;padding:5px 9px}
+
+/* ══ PIN DIALOG ════════════════════════════════════════════ */
+#pin-overlay{
+  display:none;position:fixed;inset:0;z-index:500;
+  background:rgba(46,95,138,.52);
+  align-items:flex-end;justify-content:center;
+  padding-bottom:env(safe-area-inset-bottom);
+}
+#pin-overlay.show{display:flex}
+#pin-box{
+  background:#fff;border-radius:18px 18px 0 0;padding:20px 16px 24px;
+  width:100%;max-width:380px;
+}
+#pin-header{text-align:center;margin-bottom:12px}
+#pin-title{font-size:15px;font-weight:700;color:var(--sky-d)}
+#pin-sub{font-size:11px;color:var(--gray);margin-top:3px}
+#pin-preview{
+  background:var(--sky-lt);border-radius:8px;padding:7px 12px;
+  font-size:11px;color:var(--sky-d);font-weight:600;text-align:center;
+  margin-bottom:12px;line-height:1.4
+}
+.pin-dots{display:flex;justify-content:center;gap:10px;margin-bottom:16px}
+.pin-dot{width:14px;height:14px;border-radius:50%;border:2px solid var(--sky-bd);background:#fff;transition:.15s}
+.pin-dot.filled{background:var(--sky);border-color:var(--sky)}
+.pin-dot.error{background:var(--red);border-color:var(--red)}
+.pin-keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px}
+.pin-key{
+  background:var(--sky-lt);border:1px solid var(--sky-bd);border-radius:10px;
+  padding:14px 8px;font-size:18px;font-weight:700;color:var(--sky-d);
+  text-align:center;cursor:pointer;transition:.1s;user-select:none;
+}
+.pin-key:active{background:var(--sky-bd)}
+.pin-key.del{color:var(--gray);font-size:14px}
+.pin-key.ok{background:var(--sky);color:#fff;border-color:var(--sky)}
+.pin-key.ok:active{background:var(--sky-d)}
+#pin-cancel{
+  width:100%;background:none;border:none;color:var(--gray);
+  font-size:12px;padding:8px;cursor:pointer;
+}
+#pin-err{font-size:11px;color:var(--red);text-align:center;min-height:16px;margin-bottom:6px}
+
+/* ══ LOG ═══════════════════════════════════════════════════ */
+.log-day-hdr{
+  font-size:10px;font-weight:700;color:var(--sky-m);letter-spacing:.5px;
+  padding:4px 2px 6px;border-bottom:1px solid var(--sky-lt);margin-bottom:6px;
+}
+.log-item{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:.5px solid var(--sky-lt)}
+.log-item:last-child{border-bottom:none}
+.log-badge{background:var(--sky-lt);color:var(--sky-d);padding:3px 7px;border-radius:5px;font-size:9px;font-weight:700;flex-shrink:0}
+.log-info{flex:1;min-width:0}
+.log-nm{font-size:12px;font-weight:600;color:var(--text)}
+.log-meta{font-size:10px;color:var(--muted)}
+.log-mm{font-size:14px;font-weight:800;color:var(--sky-d);flex-shrink:0;margin-right:4px}
+.del-btn{background:var(--red-lt);border:none;border-radius:5px;padding:5px 8px;font-size:11px;color:var(--red);font-weight:700;cursor:pointer;flex-shrink:0}
+.del-confirm{
+  background:#FFF5F5;border:1px solid #FFCDD2;border-radius:8px;
+  padding:10px;margin-top:6px;margin-bottom:4px;
+}
+.del-confirm p{font-size:11px;color:var(--red-dk);font-weight:600;margin-bottom:8px;line-height:1.4}
+.del-btns{display:flex;gap:8px}
+.del-yes{flex:1;background:var(--red);color:#fff;padding:7px;font-size:12px}
+.del-no{flex:1;background:#fff;color:var(--gray);border:1px solid var(--sky-bd);padding:7px;font-size:12px}
+.empty-state{text-align:center;padding:32px 16px;color:var(--muted);font-size:13px}
+
+/* ══ SETTINGS ══════════════════════════════════════════════ */
+.setting-section{margin-bottom:14px}
+.setting-section .card{margin-bottom:0}
+
+/* ══ TOAST ════════════════════════════════════════════════ */
+#toast{
+  position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);
+  padding:10px 20px;border-radius:20px;font-size:12px;font-weight:600;
+  color:#fff;transition:transform .3s;z-index:999;white-space:nowrap;pointer-events:none;
+  background:var(--sky-d);
+}
+#toast.show{transform:translateX(-50%) translateY(0)}
+#toast.success{background:var(--green)}
+#toast.error{background:var(--red)}
+
+/* ══ CONFIG BANNER ═══════════════════════════════════════════ */
+#cfg-banner{
+  display:none;background:#FFF8E1;border:1.5px solid #FFB300;
+  border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:12px;color:#5D4037;
+}
+#cfg-banner.show{display:flex;align-items:center;gap:8px}
+
+/* ══ LOADING ═══════════════════════════════════════════════ */
+.spinner{display:inline-block;width:22px;height:22px;border:3px solid var(--sky-lt);border-top-color:var(--sky);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading{display:flex;flex-direction:column;align-items:center;gap:8px;padding:28px;color:var(--muted);font-size:12px}
+</style>
+</head>
+<body>
+
+<!-- ══ CONFIG ════════════════════════════════════════════════ -->
+<script>
+const STATIONS = [
+  {code:'WS#1', name:'Office'},   {code:'WS#2', name:'M2'},
+  {code:'WS#3', name:'C2-JF2'},   {code:'WS#4', name:'IRR-A2'},
+  {code:'WS#5', name:'T4S'},      {code:'WS#6', name:'T2SW'},
+  {code:'WS#8', name:'M4(P9)'},   {code:'WS#15',name:'CNBD1'},
+  {code:'WS#16',name:'T4N'},      {code:'WS#9', name:'A3'},
+  {code:'WS#17',name:'A2/C2'},
+];
+const MONTHS_TH = ['','ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+const MONTHS_FULL = ['','มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+const DAYS_TH = ['อาทิตย์','จันทร์','อังคาร','พุธ','พฤหัสบดี','ศุกร์','เสาร์'];
+const DEFAULT_API_URL = 'https://script.google.com/macros/s/AKfycbyzWD9gQSsSg3GCDOBWAqJP3XcMVbviNUO9CYwsE6VN04000-h-u5hun6-5o4Euuyoo/exec';
+function getApiUrl(){ return localStorage.getItem('rfApiUrl')||DEFAULT_API_URL }
+function getUserName(){ return localStorage.getItem('rfUser')||'' }
+</script>
+
+<!-- ══ HEADER ════════════════════════════════════════════════ -->
+<div id="hdr">
+  <div id="hdr-left">
+    <h1>🌧 Mega Farm Rainfall</h1>
+    <div id="hdr-date">กำลังโหลด...</div>
+  </div>
+  <div id="hdr-right">
+    <div id="last-update"></div>
+    <button id="refresh-btn" onclick="refreshAll()">↻</button>
+  </div>
+</div>
+
+<!-- ══ NAV ═══════════════════════════════════════════════════ -->
+<div id="nav">
+  <button class="act" onclick="showPage('dashboard',this)">
+    <span class="nav-icon">📊</span>Dashboard
+  </button>
+  <button onclick="showPage('entry',this)">
+    <span class="nav-icon">✏️</span>กรอกข้อมูล
+  </button>
+  <button onclick="showPage('log',this)">
+    <span class="nav-icon">📋</span>Log
+  </button>
+  <button onclick="showPage('settings',this)">
+    <span class="nav-icon">⚙️</span>ตั้งค่า
+  </button>
+</div>
+
+<!-- ══ MAIN ═══════════════════════════════════════════════════ -->
+<div id="main">
+
+  <div id="cfg-banner" class="show">
+    ⚠️ <span>ยังไม่ได้ตั้งค่า API — ไปที่ <strong>⚙️ ตั้งค่า</strong> ก่อน</span>
+  </div>
+
+  <!-- ── DASHBOARD ───────────────────────────────────────── -->
+  <div id="page-dashboard" class="page act">
+
+    <div class="card">
+      <div class="sec-title">🌡️ ปริมาณน้ำฝนวันล่าสุด</div>
+      <div id="latest-date-badge" class="date-badge">📅 กำลังโหลด...</div>
+      <div id="station-grid" class="st-grid">
+        <div class="loading"><div class="spinner"></div><span>กำลังโหลด...</span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="sec-title" id="monthly-title">📅 ตารางน้ำฝนรายวัน</div>
+      <div class="tbl-wrap" id="monthly-table-wrap">
+        <div class="loading"><div class="spinner"></div><span>กำลังโหลด...</span></div>
+      </div>
+      <div class="tbl-hint" id="tbl-hint"></div>
+    </div>
+
+  </div>
+
+  <!-- ── ENTRY ────────────────────────────────────────────── -->
+  <div id="page-entry" class="page">
+    <div class="card">
+      <div class="sec-title">✏️ กรอกปริมาณน้ำฝน</div>
+      <form id="entry-form" onsubmit="openPinForSubmit(event)">
+
+        <div class="fgrid2">
+          <div class="fg">
+            <label class="fl">📅 วันที่</label>
+            <input type="date" id="f-date" class="fi" required>
+          </div>
+          <div class="fg">
+            <label class="fl">🕐 เวลา</label>
+            <input type="time" id="f-time" class="fi" required>
+          </div>
+        </div>
+
+        <div class="fg">
+          <label class="fl">📍 สถานี</label>
+          <select id="f-station" class="fi" required>
+            <option value="">— เลือกสถานี —</option>
+          </select>
+        </div>
+
+        <div class="fg">
+          <label class="fl">🌧 ปริมาณน้ำฝน (mm)</label>
+          <div class="mm-wrap">
+            <input type="number" id="f-mm" class="fi fi-lg" min="0" max="999" step="0.1"
+                   placeholder="0.0" inputmode="decimal" required>
+            <span class="mm-unit">mm</span>
+          </div>
+        </div>
+
+        <div class="fgrid2">
+          <div class="fg">
+            <label class="fl">👤 ผู้กรอก</label>
+            <input type="text" id="f-by" class="fi" placeholder="ชื่อ">
+          </div>
+          <div class="fg">
+            <label class="fl">📝 หมายเหตุ</label>
+            <input type="text" id="f-note" class="fi" placeholder="(ไม่บังคับ)">
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary">
+          🔐 ยืนยันด้วย PIN แล้วบันทึก
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ── LOG ──────────────────────────────────────────────── -->
+  <div id="page-log" class="page">
+    <div class="card">
+      <div class="sec-title" style="justify-content:space-between">
+        <span>📋 รายการบันทึก</span>
+        <button class="btn btn-ghost btn-sm" onclick="loadLog()">↻ รีเฟรช</button>
+      </div>
+      <div id="log-list">
+        <div class="loading"><div class="spinner"></div><span>กำลังโหลด...</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SETTINGS ─────────────────────────────────────────── -->
+  <div id="page-settings" class="page">
+
+    <div class="setting-section">
+      <div class="card">
+        <div class="sec-title">🔗 Google Apps Script URL</div>
+        <div class="fg">
+          <label class="fl">Web App URL</label>
+          <input type="url" id="s-api-url" class="fi"
+                 placeholder="https://script.google.com/macros/s/…/exec" style="font-size:11px">
+        </div>
+        <button class="btn btn-primary" onclick="saveApiUrl()" style="padding:10px">💾 บันทึก URL</button>
+        <p style="font-size:10px;color:var(--muted);margin-top:8px;line-height:1.5">
+          วิธีรับ URL: script.google.com → Deploy → New deployment → Web App<br>
+          Execute as: Me · Who has access: Anyone → Deploy → Copy URL
+        </p>
+      </div>
+    </div>
+
+    <div class="setting-section">
+      <div class="card">
+        <div class="sec-title">🔐 เปลี่ยน PIN (4 หลัก)</div>
+        <div class="fg">
+          <label class="fl">PIN เดิม</label>
+          <input type="password" id="s-old-pin" class="fi" maxlength="4"
+                 inputmode="numeric" pattern="\d{4}" placeholder="••••">
+        </div>
+        <div class="fgrid2">
+          <div class="fg">
+            <label class="fl">PIN ใหม่</label>
+            <input type="password" id="s-new-pin" class="fi" maxlength="4"
+                   inputmode="numeric" pattern="\d{4}" placeholder="••••">
+          </div>
+          <div class="fg">
+            <label class="fl">ยืนยัน PIN ใหม่</label>
+            <input type="password" id="s-confirm-pin" class="fi" maxlength="4"
+                   inputmode="numeric" pattern="\d{4}" placeholder="••••">
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="doChangePin()" style="padding:10px">🔐 เปลี่ยน PIN</button>
+        <p style="font-size:10px;color:var(--muted);margin-top:6px">PIN เริ่มต้น: 1234 · เก็บใน Google Sheet</p>
+      </div>
+    </div>
+
+    <div class="setting-section">
+      <div class="card">
+        <div class="sec-title">👤 ชื่อผู้ใช้งาน</div>
+        <div class="fg">
+          <input type="text" id="s-username" class="fi" placeholder="ชื่อของคุณ">
+        </div>
+        <button class="btn btn-primary" onclick="saveUsername()" style="padding:10px">💾 บันทึกชื่อ</button>
+      </div>
+    </div>
+
+    <div class="setting-section">
+      <div class="card">
+        <div class="sec-title">📊 Google Sheet</div>
+        <p style="font-size:12px;color:var(--sky-m);margin-bottom:6px">ข้อมูลทั้งหมดซิงค์ที่:</p>
+        <a href="https://drive.google.com/file/d/1Jhp3KCOr2GYU4kLaZru4EBpbE04KLa4H/view"
+           target="_blank" style="color:var(--sky-d);font-size:12px;font-weight:600">
+          📄 Rainfall Record ↗
+        </a>
+        <p style="font-size:10px;color:var(--muted);margin-top:6px">ข้อมูลใหม่จะถูกเพิ่มใน Sheet <strong>RainfallLog</strong> และ <strong>AppConfig</strong> ต่อจากข้อมูลเดิม</p>
+        <p style="font-size:10px;color:var(--muted);margin-top:4px">ทุกเครื่องที่มีลิงก์ GitHub Pages จะเห็นข้อมูลเดียวกันแบบ real-time</p>
+      </div>
+    </div>
+
+  </div>
+
+</div><!-- /#main -->
+
+<!-- ══ PIN DIALOG ═════════════════════════════════════════════ -->
+<div id="pin-overlay">
+  <div id="pin-box">
+    <div id="pin-header">
+      <div id="pin-title">🔐 ยืนยัน PIN</div>
+      <div id="pin-sub">กรอก PIN 4 หลักเพื่อดำเนินการ</div>
+    </div>
+    <div id="pin-preview"></div>
+    <div class="pin-dots" id="pin-dots">
+      <div class="pin-dot" id="d0"></div>
+      <div class="pin-dot" id="d1"></div>
+      <div class="pin-dot" id="d2"></div>
+      <div class="pin-dot" id="d3"></div>
+    </div>
+    <div id="pin-err"></div>
+    <div class="pin-keypad">
+      <div class="pin-key" onclick="pinKey('1')">1</div>
+      <div class="pin-key" onclick="pinKey('2')">2</div>
+      <div class="pin-key" onclick="pinKey('3')">3</div>
+      <div class="pin-key" onclick="pinKey('4')">4</div>
+      <div class="pin-key" onclick="pinKey('5')">5</div>
+      <div class="pin-key" onclick="pinKey('6')">6</div>
+      <div class="pin-key" onclick="pinKey('7')">7</div>
+      <div class="pin-key" onclick="pinKey('8')">8</div>
+      <div class="pin-key" onclick="pinKey('9')">9</div>
+      <div class="pin-key del" onclick="pinDel()">⌫</div>
+      <div class="pin-key" onclick="pinKey('0')">0</div>
+      <div class="pin-key ok" onclick="pinConfirm()">✓</div>
+    </div>
+    <button id="pin-cancel" onclick="closePin()">ยกเลิก</button>
+  </div>
+</div>
+
+<!-- ══ TOAST ══════════════════════════════════════════════════ -->
+<div id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════
+let pinBuffer = '';
+let pinCallback = null;    // fn(pin) called on confirm
+let pendingDeleteId = null;
+let pendingDeleteEl = null;
+let autoRefreshTimer = null;
+
+// ═══════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  updateClock();
+  setInterval(updateClock, 30000);
+
+  // Populate station select
+  const sel = document.getElementById('f-station');
+  STATIONS.forEach(s => {
+    const o = document.createElement('option');
+    o.value = s.code;
+    o.textContent = `${s.code} — ${s.name}`;
+    sel.appendChild(o);
+  });
+
+  // Restore saved values
+  document.getElementById('s-api-url').value  = getApiUrl();
+  document.getElementById('f-by').value       = getUserName();
+  document.getElementById('s-username').value = getUserName();
+
+  // Default date/time
+  const now = new Date();
+  document.getElementById('f-date').value = now.toISOString().slice(0,10);
+  document.getElementById('f-time').value = now.toTimeString().slice(0,5);
+
+  checkCfgBanner();
+  refreshAll();
+  startAutoRefresh();
+});
+
+function startAutoRefresh() {
+  clearInterval(autoRefreshTimer);
+  autoRefreshTimer = setInterval(refreshAll, 5 * 60 * 1000);
+}
+
+function updateClock() {
+  const now = new Date();
+  const days = ['อาทิตย์','จันทร์','อังคาร','พุธ','พฤหัสบดี','ศุกร์','เสาร์'];
+  const d = `วัน${days[now.getDay()]} ${now.getDate()} ${MONTHS_FULL[now.getMonth()+1]} ${now.getFullYear()+543}`;
+  const t = now.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'});
+  document.getElementById('hdr-date').textContent = `📅 ${d} · ${t}`;
+}
+
+// ═══════════════════════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════════════════════
+function showPage(name, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('act'));
+  document.querySelectorAll('#nav button').forEach(b => b.classList.remove('act'));
+  document.getElementById('page-' + name).classList.add('act');
+  btn.classList.add('act');
+  if (name === 'log') loadLog();
+}
+
+// ═══════════════════════════════════════════════════════════
+// API
+// ═══════════════════════════════════════════════════════════
+async function apiFetch(params) {
+  const url = getApiUrl();
+  if (!url) throw new Error('ยังไม่ได้ตั้งค่า API URL');
+  const qs = new URLSearchParams(params).toString();
+  const res = await fetch(url + (qs ? '?' + qs : ''), { redirect: 'follow' });
+  const data = await res.json();
+  if (data.error) throw new Error(data.error);
+  return data;
+}
+
+async function apiPost(body) {
+  const url = getApiUrl();
+  if (!url) throw new Error('ยังไม่ได้ตั้งค่า API URL');
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify(body),
+    redirect: 'follow'
+  });
+  const data = await res.json();
+  if (data.error) throw new Error(data.error);
+  return data;
+}
+
+// ═══════════════════════════════════════════════════════════
+// REFRESH ALL
+// ═══════════════════════════════════════════════════════════
+async function refreshAll() {
+  document.getElementById('last-update').textContent = 'กำลังอัปเดต...';
+  try {
+    const now = new Date();
+    const [latestData, monthlyData] = await Promise.all([
+      apiFetch({ action: 'getLatestDay' }),
+      apiFetch({ action: 'getMonthly', year: now.getFullYear(), month: now.getMonth()+1 })
+    ]);
+    renderLatestDay(latestData);
+    renderMonthlyTable(monthlyData);
+    const t = new Date(latestData.updatedAt);
+    document.getElementById('last-update').textContent =
+      '🔴 Live · ' + t.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'});
+  } catch (err) {
+    document.getElementById('station-grid').innerHTML =
+      `<div style="grid-column:1/-1;text-align:center;padding:16px;color:#E53935;font-size:12px">⚠️ ${err.message}</div>`;
+    document.getElementById('last-update').textContent = '⚠️ โหลดไม่สำเร็จ';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// DASHBOARD — Latest day tiles
+// ═══════════════════════════════════════════════════════════
+function renderLatestDay(data) {
+  // Date badge
+  const badge = document.getElementById('latest-date-badge');
+  if (data.date) {
+    const [y, m, d] = data.date.split('-');
+    badge.textContent = `📅 ${parseInt(d)} ${MONTHS_FULL[parseInt(m)]} ${parseInt(y)+543}`;
+  } else {
+    badge.textContent = '📅 ยังไม่มีข้อมูล';
+  }
+
+  // Tiles
+  const grid = document.getElementById('station-grid');
+  if (!data.summary || !data.summary.length) {
+    grid.innerHTML = '<div style="grid-column:1/-1" class="empty-state">ยังไม่มีข้อมูล</div>';
+    return;
+  }
+  grid.innerHTML = data.summary.map(s => {
+    const hasRain = s.total_mm > 0;
+    const cls = hasRain ? 'rain' : 'zero';
+    return `<div class="st ${cls}">
+      <div class="sc">${s.code}</div>
+      <div class="sn">${s.name}</div>
+      <div class="sv">${s.total_mm.toFixed(1)}</div>
+      <div class="su">mm</div>
+    </div>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════════════════
+// DASHBOARD — Monthly table
+// ═══════════════════════════════════════════════════════════
+function renderMonthlyTable(data) {
+  const { year, month, days, stations, matrix, totals } = data;
+  const today = new Date().toISOString().slice(0,10);
+  const prefix = `${year}-${String(month).padStart(2,'0')}-`;
+
+  document.getElementById('monthly-title').textContent =
+    `📅 ตารางน้ำฝนรายวัน — ${MONTHS_FULL[month]} ${year+543}`;
+
+  // Filter days that have any data
+  const activeDays = days.filter(d => {
+    const row = matrix[d];
+    if (!row) return false;
+    return stations.some(s => (row[s.code]||0) > 0);
+  });
+
+  if (!activeDays.length) {
+    document.getElementById('monthly-table-wrap').innerHTML =
+      '<div class="empty-state">ยังไม่มีข้อมูลในเดือนนี้</div>';
+    document.getElementById('tbl-hint').textContent = '';
+    return;
+  }
+
+  // Short code labels
+  const codes = stations.map(s => s.code.replace('WS#',''));
+
+  let html = `<table><thead><tr>
+    <th class="day-col">วัน</th>
+    ${stations.map((s,i) => `<th title="${s.code} ${s.name}">${codes[i]}</th>`).join('')}
+  </tr></thead><tbody>`;
+
+  activeDays.forEach(d => {
+    const fullDate = prefix + d;
+    const isToday = fullDate === today;
+    const row = matrix[d] || {};
+    html += `<tr class="${isToday ? 'today' : ''}">
+      <td class="day-col">${parseInt(d)}${isToday ? '▶' : ''}</td>
+      ${stations.map(s => {
+        const v = row[s.code]||0;
+        return `<td class="${v>0?'rain-val':''}">${v>0 ? v.toFixed(1) : '—'}</td>`;
+      }).join('')}
+    </tr>`;
+  });
+
+  // Total row
+  html += `<tr class="total-row">
+    <td class="day-col">รวม</td>
+    ${stations.map(s => `<td>${totals[s.code]>0 ? totals[s.code].toFixed(1) : '0'}</td>`).join('')}
+  </tr>`;
+
+  html += '</tbody></table>';
+  document.getElementById('monthly-table-wrap').innerHTML = html;
+  document.getElementById('tbl-hint').textContent =
+    `▶ = วันนี้  ·  ${stations.map((s,i)=>codes[i]+'='+s.code.replace('WS#','WS')).slice(0,4).join('  ')} ...`;
+}
+
+// ═══════════════════════════════════════════════════════════
+// ENTRY FORM → open PIN
+// ═══════════════════════════════════════════════════════════
+function openPinForSubmit(e) {
+  e.preventDefault();
+  const station = STATIONS.find(s => s.code === document.getElementById('f-station').value);
+  const mm = parseFloat(document.getElementById('f-mm').value);
+  if (!station || isNaN(mm)) return;
+
+  const [y,mo,d] = document.getElementById('f-date').value.split('-');
+  const dateLabel = `${parseInt(d)} ${MONTHS_TH[parseInt(mo)]} ${y}`;
+
+  openPin(
+    '🔐 ยืนยันก่อนบันทึก',
+    `${station.code} ${station.name} · ${mm.toFixed(1)} mm · ${dateLabel} ${document.getElementById('f-time').value}`,
+    async (pin) => {
+      const result = await apiPost({
+        action: 'addRecord',
+        pin,
+        data: {
+          date:        document.getElementById('f-date').value,
+          time:        document.getElementById('f-time').value,
+          stationCode: document.getElementById('f-station').value,
+          rainfall_mm: mm,
+          enteredBy:   document.getElementById('f-by').value || getUserName() || 'App',
+          notes:       document.getElementById('f-note').value
+        }
+      });
+      // Save name
+      if (document.getElementById('f-by').value)
+        localStorage.setItem('rfUser', document.getElementById('f-by').value);
+      // Reset mm & note
+      document.getElementById('f-mm').value   = '';
+      document.getElementById('f-note').value = '';
+      showToast(`✅ บันทึก ${station.code} ${mm.toFixed(1)} mm แล้ว`, 'success');
+      setTimeout(refreshAll, 800);
+      return result;
+    }
+  );
+}
+
+// ═══════════════════════════════════════════════════════════
+// LOG
+// ═══════════════════════════════════════════════════════════
+async function loadLog() {
+  document.getElementById('log-list').innerHTML =
+    '<div class="loading"><div class="spinner"></div><span>กำลังโหลด...</span></div>';
+  try {
+    const data = await apiFetch({ action: 'getRecentRecords', limit: 80 });
+    renderLog(data.records);
+  } catch (err) {
+    document.getElementById('log-list').innerHTML =
+      `<div class="empty-state" style="color:#E53935">⚠️ ${err.message}</div>`;
+  }
+}
+
+function renderLog(records) {
+  const el = document.getElementById('log-list');
+  if (!records || !records.length) {
+    el.innerHTML = '<div class="empty-state">ยังไม่มีรายการ</div>';
+    return;
+  }
+
+  // Group by date
+  const groups = {};
+  records.forEach(r => {
+    const k = r.date || '—';
+    if (!groups[k]) groups[k] = [];
+    groups[k].push(r);
+  });
+
+  let html = '';
+  Object.entries(groups).forEach(([date, recs]) => {
+    const [y,m,d] = (date||'').split('-');
+    const dateLabel = d ? `${parseInt(d)} ${MONTHS_FULL[parseInt(m)]} ${parseInt(y)+543}` : date;
+    html += `<div class="log-day-hdr">📅 ${dateLabel}</div>`;
+    recs.forEach(r => {
+      html += `
+        <div class="log-item" id="li-${r.id}">
+          <div class="log-badge">${r.stationCode}</div>
+          <div class="log-info">
+            <div class="log-nm">${r.stationName}</div>
+            <div class="log-meta">${r.time} · ${r.enteredBy||'-'}</div>
+          </div>
+          <div class="log-mm">${r.rainfall_mm.toFixed(1)}<span style="font-size:9px;font-weight:400;margin-left:1px">mm</span></div>
+          <button class="del-btn" onclick="confirmDelete('${r.id}','${r.stationCode} ${r.stationName}','${r.rainfall_mm}mm','${r.time}',this)">🗑</button>
+        </div>`;
+    });
+  });
+
+  el.innerHTML = html;
+}
+
+function confirmDelete(id, station, mm, time, btn) {
+  // Close any open confirm
+  document.querySelectorAll('.del-confirm').forEach(el => el.remove());
+
+  const item = document.getElementById('li-' + id);
+  const conf = document.createElement('div');
+  conf.className = 'del-confirm';
+  conf.innerHTML = `
+    <p>⚠️ ลบ <strong>${station} ${mm}</strong> เวลา ${time} ?<br>
+    <span style="font-size:10px;font-weight:400">ต้องยืนยัน PIN ก่อนลบ — ไม่สามารถกู้คืนได้</span></p>
+    <div class="del-btns">
+      <button class="btn del-yes" onclick="openPinForDelete('${id}','${station} ${mm} ${time}',this.closest('.del-confirm'))">🔐 ใส่ PIN &amp; ลบ</button>
+      <button class="btn del-no" onclick="this.closest('.del-confirm').remove()">ยกเลิก</button>
+    </div>`;
+  item.after(conf);
+}
+
+function openPinForDelete(id, label, confEl) {
+  openPin(
+    '🗑 ยืนยันการลบ',
+    label,
+    async (pin) => {
+      const result = await apiPost({ action: 'deleteRecord', id, pin });
+      confEl && confEl.remove();
+      const item = document.getElementById('li-' + id);
+      if (item) item.remove();
+      showToast('🗑 ลบรายการแล้ว', 'success');
+      setTimeout(refreshAll, 800);
+      return result;
+    }
+  );
+}
+
+// ═══════════════════════════════════════════════════════════
+// PIN DIALOG
+// ═══════════════════════════════════════════════════════════
+function openPin(title, preview, callback) {
+  pinBuffer = '';
+  pinCallback = callback;
+  document.getElementById('pin-title').textContent   = title;
+  document.getElementById('pin-sub').textContent     = 'กรอก PIN 4 หลักเพื่อดำเนินการ';
+  document.getElementById('pin-preview').textContent = preview;
+  document.getElementById('pin-err').textContent     = '';
+  updatePinDots();
+  document.getElementById('pin-overlay').classList.add('show');
+}
+
+function closePin() {
+  document.getElementById('pin-overlay').classList.remove('show');
+  pinBuffer   = '';
+  pinCallback = null;
+}
+
+function pinKey(k) {
+  if (pinBuffer.length >= 4) return;
+  pinBuffer += k;
+  updatePinDots();
+  if (pinBuffer.length === 4) setTimeout(pinConfirm, 120);
+}
+
+function pinDel() {
+  pinBuffer = pinBuffer.slice(0,-1);
+  updatePinDots();
+  document.getElementById('pin-err').textContent = '';
+}
+
+function updatePinDots() {
+  for (let i = 0; i < 4; i++) {
+    const d = document.getElementById('d'+i);
+    d.classList.toggle('filled', i < pinBuffer.length);
+    d.classList.remove('error');
+  }
+}
+
+async function pinConfirm() {
+  if (pinBuffer.length !== 4) {
+    document.getElementById('pin-err').textContent = 'กรุณากรอกให้ครบ 4 หลัก';
+    return;
+  }
+  const pin = pinBuffer;
+  document.getElementById('pin-sub').textContent = '⏳ กำลังตรวจสอบ...';
+  try {
+    await pinCallback(pin);
+    closePin();
+  } catch (err) {
+    // shake dots
+    for (let i=0;i<4;i++) document.getElementById('d'+i).classList.add('error');
+    document.getElementById('pin-err').textContent = err.message.includes('PIN') ? '❌ PIN ไม่ถูกต้อง' : `❌ ${err.message}`;
+    document.getElementById('pin-sub').textContent = 'กรอก PIN 4 หลักเพื่อดำเนินการ';
+    pinBuffer = '';
+    setTimeout(updatePinDots, 600);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// SETTINGS
+// ═══════════════════════════════════════════════════════════
+function saveApiUrl() {
+  const url = document.getElementById('s-api-url').value.trim();
+  if (!url) { showToast('⚠️ กรุณาใส่ URL', 'error'); return; }
+  localStorage.setItem('rfApiUrl', url);
+  checkCfgBanner();
+  showToast('✅ บันทึก URL แล้ว', 'success');
+  setTimeout(refreshAll, 400);
+}
+
+function saveUsername() {
+  const name = document.getElementById('s-username').value.trim();
+  localStorage.setItem('rfUser', name);
+  document.getElementById('f-by').value = name;
+  showToast('✅ บันทึกชื่อแล้ว', 'success');
+}
+
+async function doChangePin() {
+  const oldPin  = document.getElementById('s-old-pin').value;
+  const newPin  = document.getElementById('s-new-pin').value;
+  const confirm = document.getElementById('s-confirm-pin').value;
+
+  if (newPin !== confirm) { showToast('❌ PIN ใหม่ไม่ตรงกัน', 'error'); return; }
+  if (!/^\d{4}$/.test(newPin)) { showToast('❌ PIN ต้องเป็นตัวเลข 4 หลัก', 'error'); return; }
+
+  try {
+    await apiPost({ action: 'changePin', oldPin, newPin });
+    document.getElementById('s-old-pin').value    = '';
+    document.getElementById('s-new-pin').value    = '';
+    document.getElementById('s-confirm-pin').value= '';
+    showToast('✅ เปลี่ยน PIN สำเร็จ', 'success');
+  } catch (err) {
+    showToast(`❌ ${err.message}`, 'error');
+  }
+}
+
+function checkCfgBanner() {
+  document.getElementById('cfg-banner').classList.toggle('show', !getApiUrl());
+}
+
+// ═══════════════════════════════════════════════════════════
+// TOAST
+// ═══════════════════════════════════════════════════════════
+let toastTimer;
+function showToast(msg, type='') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'show ' + type;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { t.className = ''; }, 3200);
+}
+</script>
+</body>
+</html>
