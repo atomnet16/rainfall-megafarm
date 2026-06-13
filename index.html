@@ -1017,7 +1017,7 @@ async function loadLog() {
   document.getElementById('log-list').innerHTML =
     '<div class="loading"><div class="spinner"></div><span>Loading...</span></div>';
   try {
-    const data = await apiFetch({ action: 'getRecentRecords', limit: 80 });
+    const data = await apiFetch({ action: 'getRecentLog', limit: 80 });
     renderLog(data.records);
   } catch (err) {
     document.getElementById('log-list').innerHTML =
