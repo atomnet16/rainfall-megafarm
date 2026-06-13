@@ -856,18 +856,20 @@ function renderMonthlyTable(data) {
   });
 
   // Total row
-  html += `<tr class="total-row"><td class="day-col stn-col" style="font-weight:700;font-size:10px">All Stations</td>`;
+  html += `<tr class="total-row"><td class="day-col stn-col" style="font-weight:700;font-size:10px">Avg/Day</td>`;
   let grandTotal = 0;
   for (let n = 1; n <= lastDay; n++) {
     const full = prefix + String(n).padStart(2,'0');
     const key  = dayKeys[n]; const row = key !== undefined ? matrix[key] : null;
     const daySum = row ? stations.reduce((s,st) => s+(row[st.code]||0), 0) : 0;
+    const dayAvg = daySum > 0 ? daySum / stations.length : 0;
     grandTotal += daySum;
     const tc = full === todayStr ? ' today-td' : '';
-    html += `<td class="${tc}">${daySum > 0 ? daySum.toFixed(1) : ''}</td>`;
+    html += `<td class="${tc}">${dayAvg > 0 ? dayAvg.toFixed(1) : ''}</td>`;
   }
+  const grandAvg = grandTotal / stations.length;
   const avgDays = Math.round(stations.reduce((s,st)=>s+rainDays[st.code],0)/stations.length);
-  html += `<td class="sum-td">${grandTotal > 0 ? grandTotal.toFixed(1) : '0'}</td>`;
+  html += `<td class="sum-td">${grandAvg > 0 ? grandAvg.toFixed(1) : '0'}</td>`;
   html += `<td class="rain-days-td">Avg<br>${avgDays}d</td></tr>`;
 
   html += '</tbody></table>';
