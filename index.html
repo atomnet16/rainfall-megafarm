@@ -1156,16 +1156,16 @@ function updatePinDots() {
 }
 
 async function pinConfirm() {
-  if (pinBuffer.length !== 4) {
-    document.getElementById('pin-err').textContent = 'Please enter all 4 digits';
-    return;
-  }
+  if (pinBuffer.length !== 4 || !pinCallback) return;
+  const cb  = pinCallback;
+  pinCallback = null; // prevent double-call
   const pin = pinBuffer;
   document.getElementById('pin-sub').textContent = '⏳ Verifying...';
   try {
-    await pinCallback(pin);
+    await cb(pin);
     closePin();
   } catch (err) {
+    pinCallback = cb; // restore on error so user can retry
     for (let i=0;i<4;i++) document.getElementById('d'+i).classList.add('error');
     document.getElementById('pin-err').textContent = err.message.includes('PIN') ? '❌ Incorrect PIN' : `❌ ${err.message}`;
     document.getElementById('pin-sub').textContent = 'Enter your 4-digit PIN to proceed';
