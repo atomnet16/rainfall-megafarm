@@ -999,22 +999,25 @@ async function updateStationDropdown() {
   const date = document.getElementById('f-date').value;
   const sel  = document.getElementById('f-station');
   const prev = sel.value;
+
+  // แสดงทุกสถานีก่อน ป้องกัน dropdown ว่างระหว่างโหลด
   sel.innerHTML = '<option value="">— Select Station —</option>';
-  let filled = [];
-  if (date) {
-    try {
-      const res = await apiFetch({ action: 'getFilledStations', date });
-      filled = res.filled || [];
-    } catch(_) {}
-  }
   STATIONS.forEach(s => {
-    if (filled.includes(s.code)) return; // ซ่อนสถานีที่กรอกแล้ว
     const o = document.createElement('option');
     o.value = s.code;
     o.textContent = `${s.code} — ${s.name}`;
     sel.appendChild(o);
   });
-  // คืนค่าเดิมถ้ายังอยู่ใน list
+
+  // ซ่อนสถานีที่กรอกแล้วสำหรับวันนั้น
+  if (date && getApiUrl()) {
+    try {
+      const res = await apiFetch({ action: 'getFilledStations', date });
+      const filled = res.filled || [];
+      [...sel.options].forEach(o => { if (filled.includes(o.value)) o.remove(); });
+    } catch(_) {}
+  }
+
   if (prev && [...sel.options].some(o => o.value === prev)) sel.value = prev;
 }
 
