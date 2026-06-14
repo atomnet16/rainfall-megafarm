@@ -525,6 +525,25 @@ function getUserName(){ return localStorage.getItem('rfUser')||'' }
 
     <div class="setting-section">
       <div class="card">
+        <div class="sec-title">💬 LINE Notification</div>
+        <div class="fg">
+          <label class="fl">Channel Access Token</label>
+          <input type="password" id="s-line-token" class="fi" placeholder="Bearer token from LINE Developers" style="font-size:11px">
+        </div>
+        <div class="fg">
+          <label class="fl">User ID / Group ID</label>
+          <input type="text" id="s-line-target" class="fi" placeholder="U... or C..." style="font-size:11px">
+        </div>
+        <button class="btn btn-primary" onclick="saveLineSettings()" style="padding:10px">💾 Save LINE Settings</button>
+        <p style="font-size:10px;color:var(--muted);margin-top:8px;line-height:1.6">
+          Get token: <strong>developers.line.biz</strong> → Messaging API → Channel Access Token<br>
+          Get User ID: Add bot as friend → send any message → Webhook will return userId
+        </p>
+      </div>
+    </div>
+
+    <div class="setting-section">
+      <div class="card">
         <div class="sec-title">📊 Google Sheet</div>
         <p style="font-size:12px;color:var(--green-mid);margin-bottom:6px">All data synced to:</p>
         <a href="https://docs.google.com/spreadsheets/d/1bgFIKyiPiTKFln7YkWAsRiXg8UTMJR4ft6i4YlfruJ8/edit"
@@ -1195,6 +1214,17 @@ async function doChangePin() {
 
 function checkCfgBanner() {
   document.getElementById('cfg-banner').classList.toggle('show', !getApiUrl());
+}
+
+function saveLineSettings() {
+  const token  = document.getElementById('s-line-token').value.trim();
+  const target = document.getElementById('s-line-target').value.trim();
+  if (!token || !target) { showToast('⚠️ Please fill in both Token and ID', 'error'); return; }
+  // Save to AppConfig via API
+  apiPost({ action: 'saveConfig', key: 'LINE_TOKEN',  value: token  })
+    .then(() => apiPost({ action: 'saveConfig', key: 'LINE_TARGET', value: target }))
+    .then(() => showToast('✅ LINE settings saved', 'success'))
+    .catch(err => showToast('❌ ' + err.message, 'error'));
 }
 
 // ═══════════════════════════════════════════════════════════
