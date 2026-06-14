@@ -616,15 +616,6 @@ document.addEventListener('DOMContentLoaded', () => {
   updateClock();
   setInterval(updateClock, 30000);
 
-  // Populate station select
-  const sel = document.getElementById('f-station');
-  STATIONS.forEach(s => {
-    const o = document.createElement('option');
-    o.value = s.code;
-    o.textContent = `${s.code} — ${s.name}`;
-    sel.appendChild(o);
-  });
-
   // Restore saved values
   document.getElementById('s-api-url').value  = getApiUrl();
   document.getElementById('f-by').value       = getUserName();
@@ -634,6 +625,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const now = new Date();
   document.getElementById('f-date').value = now.toISOString().slice(0,10);
   document.getElementById('f-time').value = now.toTimeString().slice(0,5);
+
+  // Populate station dropdown (filtered by filled stations)
+  updateStationDropdown();
+  document.getElementById('f-date').addEventListener('change', updateStationDropdown);
 
   initMonthSelectors();
   initCompareSelectors();
@@ -993,6 +988,32 @@ function renderCompare() {
 }
 
 // ═══════════════════════════════════════════════════════════
+// STATION DROPDOWN — filter out already-filled stations
+// ═══════════════════════════════════════════════════════════
+async function updateStationDropdown() {
+  const date = document.getElementById('f-date').value;
+  const sel  = document.getElementById('f-station');
+  const prev = sel.value;
+  sel.innerHTML = '<option value="">— Select Station —</option>';
+  let filled = [];
+  if (date) {
+    try {
+      const res = await apiFetch({ action: 'getFilledStations', date });
+      filled = res.filled || [];
+    } catch(_) {}
+  }
+  STATIONS.forEach(s => {
+    if (filled.includes(s.code)) return; // ซ่อนสถานีที่กรอกแล้ว
+    const o = document.createElement('option');
+    o.value = s.code;
+    o.textContent = `${s.code} — ${s.name}`;
+    sel.appendChild(o);
+  });
+  // คืนค่าเดิมถ้ายังอยู่ใน list
+  if (prev && [...sel.options].some(o => o.value === prev)) sel.value = prev;
+}
+
+// ═══════════════════════════════════════════════════════════
 // ENTRY FORM → open PIN
 // ═══════════════════════════════════════════════════════════
 function openPinForSubmit(e) {
@@ -1025,6 +1046,7 @@ function openPinForSubmit(e) {
       document.getElementById('f-mm').value   = '';
       document.getElementById('f-note').value = '';
       showToast(`✅ Saved ${station.code} ${mm.toFixed(1)} mm`, 'success');
+      updateStationDropdown();
       setTimeout(refreshAll, 800);
       return result;
     }
