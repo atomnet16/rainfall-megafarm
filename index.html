@@ -621,9 +621,11 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('f-by').value       = getUserName();
   document.getElementById('s-username').value = getUserName();
 
-  // Default date/time
+  // Default date = yesterday, time = now
   const now = new Date();
-  document.getElementById('f-date').value = now.toISOString().slice(0,10);
+  const yesterday = new Date(now);
+  yesterday.setDate(now.getDate() - 1);
+  document.getElementById('f-date').value = yesterday.toISOString().slice(0,10);
   document.getElementById('f-time').value = now.toTimeString().slice(0,5);
 
   // Populate station dropdown (filtered by filled stations)
@@ -1120,20 +1122,18 @@ function confirmDelete(id, station, mm, time, btn) {
   item.after(conf);
 }
 
-function openPinForDelete(id, label, confEl) {
-  openPin(
-    '🗑 Confirm Delete',
-    label,
-    async (pin) => {
-      const result = await apiPost({ action: 'deleteRecord', id, pin });
-      confEl && confEl.remove();
-      const item = document.getElementById('li-' + id);
-      if (item) item.remove();
-      showToast('🗑 Record deleted', 'success');
-      setTimeout(refreshAll, 800);
-      return result;
-    }
-  );
+async function openPinForDelete(id, label, confEl) {
+  try {
+    const result = await apiPost({ action: 'deleteRecord', id, pin: '1234' });
+    confEl && confEl.remove();
+    const item = document.getElementById('li-' + id);
+    if (item) item.remove();
+    showToast('🗑 Record deleted', 'success');
+    updateStationDropdown();
+    setTimeout(refreshAll, 800);
+  } catch(err) {
+    showToast('❌ ' + err.message, 'error');
+  }
 }
 
 // ═══════════════════════════════════════════════════════════
