@@ -621,11 +621,14 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('f-by').value       = getUserName();
   document.getElementById('s-username').value = getUserName();
 
-  // Default date = yesterday, time = now
+  // Default date = yesterday (local), time = now
   const now = new Date();
   const yesterday = new Date(now);
   yesterday.setDate(now.getDate() - 1);
-  document.getElementById('f-date').value = yesterday.toISOString().slice(0,10);
+  const yy = yesterday.getFullYear();
+  const mm = String(yesterday.getMonth() + 1).padStart(2, '0');
+  const dd = String(yesterday.getDate()).padStart(2, '0');
+  document.getElementById('f-date').value = `${yy}-${mm}-${dd}`;
   document.getElementById('f-time').value = now.toTimeString().slice(0,5);
 
   // Populate station dropdown (filtered by filled stations)
