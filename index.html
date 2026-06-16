@@ -82,22 +82,31 @@ input,select,button,textarea{font-family:inherit}
 .sec-title::before{content:'●';font-size:7px;opacity:.7}
 .date-badge{display:inline-flex;align-items:center;gap:5px;background:var(--green-pale);color:var(--green-deep);padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;margin-bottom:10px;border:1px solid rgba(0,230,118,.2);font-family:var(--mono)}
 
-/* ══ STATION TILES ═════════════════════════════════════════ */
-.st-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:2px}
-@media(min-width:420px){.st-grid{grid-template-columns:repeat(4,1fr)}}
-.st{background:#060d07;border-radius:8px;padding:8px 5px 6px;text-align:center;border:1px solid var(--line);transition:.2s}
-.st.rain{background:rgba(93,184,255,.06);border-color:rgba(93,184,255,.35)}
-.st .sc{font-size:8px;color:var(--green-deep);font-weight:700;font-family:var(--mono);opacity:.8}
-.st .sn{font-size:8px;font-weight:600;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.st .sv{font-size:18px;font-weight:700;color:var(--green-deep);line-height:1.1;margin:3px 0 1px;font-family:var(--mono);text-shadow:0 0 10px rgba(0,230,118,.4)}
-.st.rain .sv{color:var(--rain);text-shadow:0 0 10px rgba(93,184,255,.4)}
+/* ══ STATION TILES — HEXAGON HONEYCOMB ═════════════════════ */
+.st-grid{display:flex;flex-direction:column;align-items:flex-start;padding:8px 0 4px;overflow:visible}
+.hex-row{display:flex;margin-top:-22px}
+.hex-row:first-child{margin-top:0}
+.hex-row.r-offset{margin-left:47px}
+.hex-row.r-last{margin-left:188px}
+.st{
+  position:relative;width:90px;height:78px;margin:0 3px;
+  clip-path:polygon(25% 0%,75% 0%,100% 50%,75% 100%,25% 100%,0% 50%);
+  background:#0d1f10;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:10px 6px;
+  filter:drop-shadow(0 0 4px rgba(0,230,118,.35));
+  transition:filter .2s;
+}
+.st.rain{background:#091824;filter:drop-shadow(0 0 5px rgba(93,184,255,.45))}
+.st.zero{background:#0a100a;filter:drop-shadow(0 0 2px rgba(26,46,28,.4))}
+.st.max-val{background:#1a0808;filter:drop-shadow(0 0 8px rgba(255,82,82,.65))}
+.st .sc{font-size:8px;color:var(--green-deep);font-weight:700;font-family:var(--mono);opacity:.8;line-height:1.2}
+.st .sn{font-size:7px;font-weight:600;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:70px}
+.st .sv{font-size:20px;font-weight:300;color:var(--green-deep);line-height:1.1;margin:2px 0 1px;font-family:var(--mono);text-shadow:0 0 12px rgba(0,230,118,.5)}
+.st.rain .sv{color:var(--rain);text-shadow:0 0 12px rgba(93,184,255,.5)}
 .st.zero .sv{color:var(--line);text-shadow:none}
-.st .su{font-size:8px;color:var(--muted)}
-.st .s-bar{height:2px;border-radius:2px;margin-top:4px;background:var(--line);overflow:hidden}
-.st .s-bar-fill{height:100%;border-radius:2px;background:var(--green-deep)}
-.st.rain .s-bar-fill{background:var(--rain)}
-.st.max-val{background:rgba(93,184,255,.1);border-color:rgba(93,184,255,.5)}
-.st.max-val .sv{color:var(--rain);font-weight:800;text-shadow:0 0 12px rgba(93,184,255,.5)}
+.st.max-val .sv{color:var(--red);font-weight:600;text-shadow:0 0 14px rgba(255,82,82,.6)}
+.st .su{font-size:7px;color:var(--muted)}
 
 /* ══ MONTHLY TABLE ═════════════════════════════════════════ */
 .tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:-4px}
@@ -748,20 +757,22 @@ function renderLatestDay(data) {
   document.getElementById('avg-max-val').textContent = maxS.total_mm.toFixed(1) + ' mm';
   document.getElementById('avg-max-name').textContent= `${maxS.code} ${maxS.name}`;
 
-  const maxMm = maxS.total_mm || 1;
-  grid.innerHTML = data.summary.map(s => {
+  const hexTile = s => {
     const hasRain = s.total_mm > 0;
     const isMax   = hasRain && s.total_mm === maxS.total_mm;
     const cls     = isMax ? 'rain max-val' : hasRain ? 'rain' : 'zero';
-    const pct     = Math.round(s.total_mm / maxMm * 100);
     return `<div class="st ${cls}">
       <div class="sc">${s.code}</div>
       <div class="sn">${s.name}</div>
       <div class="sv">${s.total_mm.toFixed(1)}</div>
       <div class="su">mm</div>
-      <div class="s-bar"><div class="s-bar-fill" style="width:${pct}%"></div></div>
     </div>`;
-  }).join('');
+  };
+  const sm = data.summary;
+  grid.innerHTML =
+    `<div class="hex-row">${sm.slice(0,5).map(hexTile).join('')}</div>` +
+    `<div class="hex-row r-offset">${sm.slice(5,10).map(hexTile).join('')}</div>` +
+    (sm[10] ? `<div class="hex-row r-last">${hexTile(sm[10])}</div>` : '');
 }
 
 // ═══════════════════════════════════════════════════════════
