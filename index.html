@@ -91,22 +91,29 @@ input,select,button,textarea{font-family:inherit}
 .st{
   position:relative;width:90px;height:78px;margin:0 3px;
   clip-path:polygon(25% 0%,75% 0%,100% 50%,75% 100%,25% 100%,0% 50%);
-  background:#0d1f10;
+  background:#112415;
   display:flex;flex-direction:column;align-items:center;justify-content:center;
   text-align:center;padding:10px 6px;
-  filter:drop-shadow(0 0 4px rgba(0,230,118,.35));
+  filter:drop-shadow(0 0 6px rgba(0,230,118,.5));
   transition:filter .2s;
 }
-.st.rain{background:#091824;filter:drop-shadow(0 0 5px rgba(93,184,255,.45))}
-.st.zero{background:#0a100a;filter:drop-shadow(0 0 2px rgba(26,46,28,.4))}
-.st.max-val{background:#1a0808;filter:drop-shadow(0 0 8px rgba(255,82,82,.65))}
-.st .sc{font-size:8px;color:var(--green-deep);font-weight:700;font-family:var(--mono);opacity:.8;line-height:1.2}
-.st .sn{font-size:7px;font-weight:600;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:70px}
-.st .sv{font-size:20px;font-weight:300;color:var(--green-deep);line-height:1.1;margin:2px 0 1px;font-family:var(--mono);text-shadow:0 0 12px rgba(0,230,118,.5)}
-.st.rain .sv{color:var(--rain);text-shadow:0 0 12px rgba(93,184,255,.5)}
-.st.zero .sv{color:var(--line);text-shadow:none}
-.st.max-val .sv{color:var(--red);font-weight:600;text-shadow:0 0 14px rgba(255,82,82,.6)}
-.st .su{font-size:7px;color:var(--muted)}
+/* 0mm */
+.st.lv-zero{background:#0c120c;filter:drop-shadow(0 0 3px rgba(26,46,28,.5))}
+/* 0.1–30mm green */
+.st.lv-low{background:#0d2210;filter:drop-shadow(0 0 7px rgba(0,230,118,.65))}
+/* 30–50mm orange */
+.st.lv-mid{background:#221408;filter:drop-shadow(0 0 7px rgba(255,138,0,.65))}
+/* >50mm red */
+.st.lv-high{background:#220a08;filter:drop-shadow(0 0 8px rgba(255,82,82,.75))}
+
+.st .sc{font-size:8px;color:#a8d8b0;font-weight:700;font-family:var(--mono);line-height:1.2}
+.st .sn{font-size:7px;font-weight:600;color:rgba(168,216,176,.55);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:70px}
+.st .sv{font-size:20px;font-weight:400;line-height:1.1;margin:2px 0 1px;font-family:var(--mono)}
+.st.lv-zero .sv{color:#2e4a32;text-shadow:none}
+.st.lv-low  .sv{color:#00e676;text-shadow:0 0 14px rgba(0,230,118,.7)}
+.st.lv-mid  .sv{color:#ff8a00;text-shadow:0 0 14px rgba(255,138,0,.7)}
+.st.lv-high .sv{color:#ff5252;text-shadow:0 0 14px rgba(255,82,82,.7)}
+.st .su{font-size:7px;color:rgba(168,216,176,.4)}
 
 /* ══ MONTHLY TABLE ═════════════════════════════════════════ */
 .tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:-4px}
@@ -758,13 +765,12 @@ function renderLatestDay(data) {
   document.getElementById('avg-max-name').textContent= `${maxS.code} ${maxS.name}`;
 
   const hexTile = s => {
-    const hasRain = s.total_mm > 0;
-    const isMax   = hasRain && s.total_mm === maxS.total_mm;
-    const cls     = isMax ? 'rain max-val' : hasRain ? 'rain' : 'zero';
+    const mm = s.total_mm;
+    const cls = mm <= 0 ? 'lv-zero' : mm <= 30 ? 'lv-low' : mm <= 50 ? 'lv-mid' : 'lv-high';
     return `<div class="st ${cls}">
       <div class="sc">${s.code}</div>
       <div class="sn">${s.name}</div>
-      <div class="sv">${s.total_mm.toFixed(1)}</div>
+      <div class="sv">${mm.toFixed(1)}</div>
       <div class="su">mm</div>
     </div>`;
   };
