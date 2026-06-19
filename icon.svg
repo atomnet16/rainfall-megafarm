@@ -1,0 +1,72 @@
+<svg viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="bgR" cx="50%" cy="45%" r="60%">
+      <stop offset="0%" stop-color="#0d2a2a"/>
+      <stop offset="100%" stop-color="#060f0f"/>
+    </radialGradient>
+    <radialGradient id="glowR" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#00ff44" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#00ff44" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="boltGlow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="dishGlow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <rect width="500" height="500" rx="110" fill="url(#bgR)"/>
+  <ellipse cx="250" cy="230" rx="90" ry="110" fill="url(#glowR)"/>
+  <polygon points="90,220 130,170 155,215" fill="#0d6e78"/>
+  <polygon points="130,170 160,140 170,180" fill="#1a9aaa"/>
+  <polygon points="130,170 155,215 170,180" fill="#0f8090"/>
+  <polygon points="160,140 195,125 185,165" fill="#22b8cc"/>
+  <polygon points="160,140 185,165 170,180" fill="#15a0b0"/>
+  <polygon points="185,165 195,125 215,155" fill="#1ab0c2"/>
+  <polygon points="90,220 130,170 105,240" fill="#0a5a64"/>
+  <polygon points="105,240 130,170 155,215" fill="#0d7080"/>
+  <polygon points="195,125 230,100 240,140" fill="#2acce0"/>
+  <polygon points="230,100 265,110 250,145" fill="#20c0d5"/>
+  <polygon points="195,125 240,140 215,155" fill="#18afc0"/>
+  <polygon points="240,140 250,145 230,160" fill="#25c5d8"/>
+  <polygon points="215,155 240,140 230,160" fill="#12a0b0"/>
+  <polygon points="265,110 305,125 290,160" fill="#22c8dc"/>
+  <polygon points="305,125 335,145 310,175" fill="#1ab8cc"/>
+  <polygon points="265,110 290,160 250,145" fill="#18b0c5"/>
+  <polygon points="290,160 310,175 275,185" fill="#10a0b5"/>
+  <polygon points="250,145 290,160 275,185" fill="#15aac0"/>
+  <polygon points="310,175 335,145 355,175" fill="#12a0b8"/>
+  <polygon points="310,175 355,175 340,210" fill="#0d8a9a"/>
+  <polygon points="335,145 370,170 355,175" fill="#189aaa"/>
+  <polygon points="355,175 370,170 390,210" fill="#0d8090"/>
+  <polygon points="355,175 390,210 340,210" fill="#0a7080"/>
+  <polygon points="90,220 105,240 155,215" fill="#0a6070"/>
+  <polygon points="105,240 155,215 180,245" fill="#0d7080"/>
+  <polygon points="155,215 185,165 200,220" fill="#0f8090"/>
+  <polygon points="185,165 215,155 200,220" fill="#128595"/>
+  <polygon points="200,220 215,155 230,160 240,225" fill="#10808e"/>
+  <polygon points="230,160 275,185 240,225" fill="#0e7a88"/>
+  <polygon points="275,185 310,175 295,230" fill="#0c7080"/>
+  <polygon points="310,175 340,210 295,230" fill="#0a6570"/>
+  <polygon points="340,210 390,210 360,240" fill="#096070"/>
+  <polygon points="90,220 180,245 105,255" fill="#085a68"/>
+  <polygon points="180,245 240,225 210,260" fill="#0a6570"/>
+  <polygon points="240,225 295,230 260,265" fill="#096070"/>
+  <polygon points="295,230 360,240 320,265" fill="#085868"/>
+  <polygon points="105,255 180,245 160,270" fill="#074e58"/>
+  <polygon points="180,245 210,260 185,275" fill="#085460"/>
+  <polygon points="210,260 260,265 235,278" fill="#074e58"/>
+  <polygon points="260,265 320,265 290,275" fill="#064855"/>
+  <polygon points="237,115 205,230 242,222 210,345 295,195 255,205 280,115" fill="#39ff6a" filter="url(#boltGlow)"/>
+  <polygon points="242,120 220,215 248,210 225,305 278,210 250,218 268,120" fill="#a0ffb8" opacity="0.55"/>
+  <ellipse cx="250" cy="385" rx="80" ry="28" fill="none" stroke="#1ab8cc" stroke-width="3" filter="url(#dishGlow)"/>
+  <path d="M172,385 Q185,350 250,340 Q315,350 328,385" fill="none" stroke="#1ab8cc" stroke-width="2.5"/>
+  <ellipse cx="250" cy="375" rx="55" ry="16" fill="#0a4a52" opacity="0.6"/>
+  <line x1="250" y1="385" x2="250" y2="420" stroke="#159aaa" stroke-width="5" stroke-linecap="round"/>
+  <path d="M215,420 Q250,412 285,420 L282,432 Q250,424 218,432 Z" fill="#0d7080"/>
+  <ellipse cx="250" cy="432" rx="33" ry="6" fill="#0a6070"/>
+  <circle cx="250" cy="362" r="5" fill="#39ff6a" opacity="0.7" filter="url(#boltGlow)"/>
+  <rect width="500" height="500" rx="110" fill="none" stroke="#1ab8cc" stroke-width="1.5" opacity="0.2"/>
+</svg>

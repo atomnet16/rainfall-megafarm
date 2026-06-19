@@ -1,0 +1,19 @@
+{
+  "name": "Mega Farm Rainfall",
+  "short_name": "Rainfall",
+  "description": "Rainfall recording app for Mega Farm Cambodia",
+  "start_url": "/rainfall-megafarm/",
+  "scope": "/rainfall-megafarm/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#060d07",
+  "theme_color": "#060d07",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
