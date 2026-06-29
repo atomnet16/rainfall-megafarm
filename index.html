@@ -408,16 +408,22 @@ function getUserName(){ return localStorage.getItem('rfUser')||'' }
 
     <div class="card">
       <div class="sec-title">⚖️ Compare Data</div>
+
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+        <span style="font-size:12px;color:var(--muted);flex-shrink:0">Month</span>
+        <select id="cmp-mfrom" class="fi" style="font-size:12px;padding:5px 7px"></select>
+        <span style="color:var(--muted)">→</span>
+        <select id="cmp-mto" class="fi" style="font-size:12px;padding:5px 7px"></select>
+      </div>
+
       <div class="cmp-slots">
         <div class="cmp-slot slot-a">
-          <div class="cmp-slot-label">Set A</div>
-          <select id="cmp-ma"></select>
-          <select id="cmp-ya"></select>
+          <div class="cmp-slot-label">Year A</div>
+          <select id="cmp-ya" style="width:100%;border:1px solid var(--line);border-radius:5px;padding:5px;font-size:13px;color:var(--text);background:#0a1409;margin-top:3px"></select>
         </div>
         <div class="cmp-slot slot-b">
-          <div class="cmp-slot-label">Set B</div>
-          <select id="cmp-mb"></select>
-          <select id="cmp-yb"></select>
+          <div class="cmp-slot-label">Year B</div>
+          <select id="cmp-yb" style="width:100%;border:1px solid var(--line);border-radius:5px;padding:5px;font-size:13px;color:var(--text);background:#0a1409;margin-top:3px"></select>
         </div>
       </div>
       <button class="btn btn-primary" onclick="runCompare()" style="padding:10px;margin-bottom:2px">
@@ -1002,28 +1008,28 @@ function renderMonthlyTable(data) {
 // COMPARE
 // ═══════════════════════════════════════════════════════════
 function initCompareSelectors() {
-  ['cmp-ma','cmp-mb'].forEach(id => {
-    const sel = document.getElementById(id);
-    MONTHS_FULL.slice(1).forEach((m,i) => {
-      const o = document.createElement('option');
-      o.value = i+1; o.textContent = m; sel.appendChild(o);
-    });
-  });
   const curY = new Date().getFullYear();
-  ['cmp-ya','cmp-yb'].forEach(id => {
+  const now  = new Date();
+
+  // Month range selectors (shared)
+  ['cmp-mfrom','cmp-mto'].forEach((id, idx) => {
+    const sel = document.getElementById(id);
+    MONTHS_FULL.slice(1).forEach((m, i) => {
+      const o = document.createElement('option');
+      o.value = i + 1; o.textContent = m; sel.appendChild(o);
+    });
+    sel.value = idx === 0 ? 1 : now.getMonth() + 1;
+  });
+
+  // Year selectors
+  ['cmp-ya','cmp-yb'].forEach((id, idx) => {
     const sel = document.getElementById(id);
     for (let y = curY; y >= 2025; y--) {
       const o = document.createElement('option');
       o.value = y; o.textContent = y; sel.appendChild(o);
     }
+    sel.value = idx === 0 ? curY : curY - 1;
   });
-  const now = new Date();
-  document.getElementById('cmp-ma').value = now.getMonth()+1;
-  document.getElementById('cmp-ya').value = now.getFullYear();
-  const lm = now.getMonth()===0 ? 12 : now.getMonth();
-  const ly = now.getMonth()===0 ? now.getFullYear()-1 : now.getFullYear();
-  document.getElementById('cmp-mb').value = lm;
-  document.getElementById('cmp-yb').value = ly;
 }
 
 function setCmpTab(t) {
@@ -1034,19 +1040,28 @@ function setCmpTab(t) {
 }
 
 async function runCompare() {
-  const yA = parseInt(document.getElementById('cmp-ya').value);
-  const mA = parseInt(document.getElementById('cmp-ma').value);
-  const yB = parseInt(document.getElementById('cmp-yb').value);
-  const mB = parseInt(document.getElementById('cmp-mb').value);
+  const yA   = parseInt(document.getElementById('cmp-ya').value);
+  const yB   = parseInt(document.getElementById('cmp-yb').value);
+  const mF   = parseInt(document.getElementById('cmp-mfrom').value);
+  const mT   = parseInt(document.getElementById('cmp-mto').value);
+  const mFrom = Math.min(mF, mT);
+  const mTo   = Math.max(mF, mT);
+
   document.getElementById('cmp-result').innerHTML =
     '<div class="loading"><div class="spinner"></div><span>Loading...</span></div>';
+  document.getElementById('cmp-legend').style.display = 'none';
+
+  const rangeLabel = mFrom === mTo
+    ? MONTHS_TH[mFrom]
+    : `${MONTHS_TH[mFrom]}–${MONTHS_TH[mTo]}`;
+
   try {
     [cmpDataA, cmpDataB] = await Promise.all([
-      apiFetch({ action:'getMonthly', year:yA, month:mA }),
-      apiFetch({ action:'getMonthly', year:yB, month:mB })
+      apiFetch({ action:'getYearly', year:yA, monthFrom:mFrom, monthTo:mTo }),
+      apiFetch({ action:'getYearly', year:yB, monthFrom:mFrom, monthTo:mTo })
     ]);
-    document.getElementById('cmp-legend-a').textContent = `Set A: ${MONTHS_TH[mA]} ${yA}`;
-    document.getElementById('cmp-legend-b').textContent = `Set B: ${MONTHS_TH[mB]} ${yB}`;
+    document.getElementById('cmp-legend-a').textContent = `${rangeLabel} ${yA}`;
+    document.getElementById('cmp-legend-b').textContent = `${rangeLabel} ${yB}`;
     document.getElementById('cmp-legend').style.display = 'flex';
     renderCompare();
   } catch(err) {
@@ -1055,33 +1070,18 @@ async function runCompare() {
   }
 }
 
-function calcMonthStats(data) {
-  const { year, month, days, stations, matrix, totals } = data;
-  const lastDay = new Date(year, month, 0).getDate();
-  const prefix  = `${year}-${String(month).padStart(2,'0')}-`;
-  const dayKeys = {};
-  (days||[]).forEach(d => { dayKeys[parseInt(d)] = d; });
-  const rainDays = {};
-  stations.forEach(s => {
-    rainDays[s.code] = 0;
-    for (let n = 1; n <= lastDay; n++) {
-      const key = dayKeys[n]; const row = key !== undefined ? matrix[key] : null;
-      if (row && (row[s.code]||0) > 0) rainDays[s.code]++;
-    }
-  });
-  return { totals: totals||{}, rainDays };
-}
-
 function renderCompare() {
+  if (!cmpDataA || !cmpDataB) return;
   const stations = cmpDataA.stations;
-  const sA = calcMonthStats(cmpDataA), sB = calcMonthStats(cmpDataB);
-  const getVal = (s, st) => cmpTab==='mm' ? (s.totals[st.code]||0) : s.rainDays[st.code];
-  const maxVal = Math.max(...stations.flatMap(st => [getVal(sA,st), getVal(sB,st)]), 1);
+  const getVal = (data, st) => cmpTab === 'mm'
+    ? (data.stationTotals[st.code]   || 0)
+    : (data.stationRainDays[st.code] || 0);
+  const maxVal = Math.max(...stations.flatMap(st => [getVal(cmpDataA,st), getVal(cmpDataB,st)]), 1);
   let html = '';
   stations.forEach(st => {
-    const vA = getVal(sA,st), vB = getVal(sB,st);
-    const pA = Math.round(vA/maxVal*100), pB = Math.round(vB/maxVal*100);
-    const fmt = v => cmpTab==='mm' ? v.toFixed(1) : v+'d';
+    const vA = getVal(cmpDataA, st), vB = getVal(cmpDataB, st);
+    const pA = Math.round(vA / maxVal * 100), pB = Math.round(vB / maxVal * 100);
+    const fmt = v => cmpTab === 'mm' ? v.toFixed(1) : v + 'd';
     html += `<div class="cbar-row">
       <div class="cbar-stn">${st.code}<br><small>${st.name}</small></div>
       <div class="cbar-col">
@@ -1091,7 +1091,7 @@ function renderCompare() {
       <div class="cbar-vals"><span class="val-a">${fmt(vA)}</span><span class="val-b">${fmt(vB)}</span></div>
     </div>`;
   });
-  document.getElementById('cmp-result').innerHTML = html;
+  document.getElementById('cmp-result').innerHTML = html || '<div class="empty-state">No data</div>';
 }
 
 // ═══════════════════════════════════════════════════════════
