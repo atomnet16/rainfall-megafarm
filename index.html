@@ -66,12 +66,12 @@ input,select,button,textarea{font-family:inherit}
 }
 #nav button{
   flex:1;border:none;background:none;color:var(--muted);
-  font-size:10px;font-weight:600;cursor:pointer;
+  font-size:12px;font-weight:600;cursor:pointer;
   border-bottom:2px solid transparent;transition:.15s;
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
   letter-spacing:.3px;
 }
-#nav button .nav-icon{font-size:18px;line-height:1}
+#nav button .nav-icon{font-size:20px;line-height:1}
 #nav button.act{color:var(--green-deep);border-bottom-color:var(--green-deep)}
 
 /* ══ MAIN ══════════════════════════════════════════════════ */
@@ -81,9 +81,9 @@ input,select,button,textarea{font-family:inherit}
 
 /* ══ CARDS ═════════════════════════════════════════════════ */
 .card{background:var(--white);border-radius:var(--radius);border:1px solid var(--line);padding:12px;margin-bottom:12px;box-shadow:var(--shadow)}
-.sec-title{font-size:9px;font-weight:700;color:var(--green-deep);letter-spacing:1px;text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:5px}
-.sec-title::before{content:'●';font-size:7px;opacity:.7}
-.date-badge{display:inline-flex;align-items:center;gap:5px;background:var(--green-pale);color:var(--green-deep);padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;margin-bottom:10px;border:1px solid rgba(0,230,118,.2);font-family:var(--mono)}
+.sec-title{font-size:11px;font-weight:700;color:var(--green-deep);letter-spacing:1px;text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:5px}
+.sec-title::before{content:'●';font-size:8px;opacity:.7}
+.date-badge{display:inline-flex;align-items:center;gap:5px;background:var(--green-pale);color:var(--green-deep);padding:4px 10px;border-radius:20px;font-size:13px;font-weight:700;margin-bottom:10px;border:1px solid rgba(0,230,118,.2);font-family:var(--mono)}
 
 /* ══ STATION TILES — HEXAGON HONEYCOMB ═════════════════════ */
 .st-grid{display:flex;flex-direction:column;align-items:flex-start;padding:4px 0;overflow:visible}
@@ -100,10 +100,10 @@ input,select,button,textarea{font-family:inherit}
 .st.lv-low {background:#0d2210;filter:drop-shadow(0 0 7px rgba(0,230,118,.65))}
 .st.lv-mid {background:#221408;filter:drop-shadow(0 0 7px rgba(255,138,0,.65))}
 .st.lv-high{background:#220a08;filter:drop-shadow(0 0 8px rgba(255,82,82,.75))}
-.st .sc{font-size:8px;color:#a8d8b0;font-weight:700;font-family:var(--mono);line-height:1.2}
-.st .sn{font-size:7px;font-weight:600;color:rgba(168,216,176,.45);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.st .sc{font-size:9px;color:#a8d8b0;font-weight:700;font-family:var(--mono);line-height:1.2}
+.st .sn{font-size:8px;font-weight:600;color:rgba(168,216,176,.45);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .st .sv{font-weight:400;font-family:var(--mono);line-height:1.1;margin:2px 0 1px}
-.st .su{font-size:7px;color:rgba(214,237,218,.35)}
+.st .su{font-size:8px;color:rgba(214,237,218,.35)}
 .st.lv-zero .sv{color:#2e4a32;text-shadow:none}
 .st.lv-low  .sv{color:#00e676;text-shadow:0 0 12px rgba(0,230,118,.65)}
 .st.lv-mid  .sv{color:#ff8a00;text-shadow:0 0 12px rgba(255,138,0,.65)}
@@ -112,11 +112,11 @@ input,select,button,textarea{font-family:inherit}
 
 /* ══ MONTHLY TABLE ═════════════════════════════════════════ */
 .tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:-4px}
-.tbl-wrap table{border-collapse:collapse;font-size:10px;white-space:nowrap}
+.tbl-wrap table{border-collapse:collapse;font-size:11px;white-space:nowrap}
 .tbl-wrap th{
   background:#0a1409;color:var(--muted);padding:5px 6px;
   font-weight:700;text-align:center;position:sticky;top:0;border-bottom:1px solid var(--line);
-  font-size:9px;letter-spacing:.5px;
+  font-size:10px;letter-spacing:.5px;
 }
 .tbl-wrap th.day-col{position:sticky;left:0;z-index:2;background:#0a1409}
 .tbl-wrap td{padding:4px 5px;text-align:center;border-bottom:.5px solid var(--line);color:var(--muted);font-family:var(--mono)}
@@ -183,7 +183,7 @@ input,select,button,textarea{font-family:inherit}
 
 /* ══ FORM ══════════════════════════════════════════════════ */
 .fg{margin-bottom:10px}
-.fl{display:block;font-size:11px;font-weight:600;color:var(--green-deep);margin-bottom:4px;letter-spacing:.3px;opacity:.8}
+.fl{display:block;font-size:13px;font-weight:600;color:var(--green-deep);margin-bottom:4px;letter-spacing:.3px;opacity:.8}
 .fi{
   width:100%;border:1px solid var(--line);border-radius:var(--radius-sm);
   padding:9px 11px;font-size:14px;color:var(--text);background:#060d07;transition:.2s;
@@ -206,46 +206,48 @@ input,select,button,textarea{font-family:inherit}
 /* ══ PIN DIALOG ════════════════════════════════════════════ */
 #pin-overlay{
   display:none;position:fixed;inset:0;z-index:500;
-  background:rgba(6,13,7,.85);
-  align-items:flex-end;justify-content:center;
-  backdrop-filter:blur(6px);
+  background:rgba(6,13,7,.88);
+  align-items:center;justify-content:center;
+  backdrop-filter:blur(8px);
+  padding:16px;
 }
 #pin-overlay.show{display:flex}
 #pin-box{
   background:#0c1610;
-  border-radius:24px 24px 0 0;
-  padding:24px 20px calc(24px + env(safe-area-inset-bottom));
-  width:100%;max-width:480px;
-  border:1px solid var(--line);border-bottom:none;
+  border-radius:24px;
+  padding:28px 24px calc(28px + env(safe-area-inset-bottom));
+  width:100%;max-width:400px;
+  border:1px solid rgba(0,230,118,.18);
+  box-shadow:0 8px 40px rgba(0,0,0,.7),0 0 0 1px rgba(0,230,118,.06);
 }
-#pin-header{text-align:center;margin-bottom:14px}
-#pin-title{font-size:16px;font-weight:700;color:var(--green-deep);font-family:var(--mono)}
-#pin-sub{font-size:12px;color:var(--muted);margin-top:4px}
+#pin-header{text-align:center;margin-bottom:16px}
+#pin-title{font-size:18px;font-weight:700;color:var(--green-deep);font-family:var(--mono)}
+#pin-sub{font-size:13px;color:var(--muted);margin-top:5px}
 #pin-preview{
-  background:var(--green-pale);border-radius:10px;padding:10px 14px;
-  font-size:12px;color:var(--green-deep);font-weight:600;text-align:center;
-  margin-bottom:14px;line-height:1.5;border:1px solid rgba(0,230,118,.2);
+  background:var(--green-pale);border-radius:10px;padding:11px 14px;
+  font-size:13px;color:var(--green-deep);font-weight:600;text-align:center;
+  margin-bottom:16px;line-height:1.5;border:1px solid rgba(0,230,118,.2);
 }
-.pin-dots{display:flex;justify-content:center;gap:16px;margin-bottom:20px}
-.pin-dot{width:18px;height:18px;border-radius:50%;border:2px solid var(--line);background:#060d07;transition:.15s}
-.pin-dot.filled{background:var(--green-deep);border-color:var(--green-deep);box-shadow:0 0 10px rgba(0,230,118,.6)}
+.pin-dots{display:flex;justify-content:center;gap:20px;margin-bottom:22px}
+.pin-dot{width:20px;height:20px;border-radius:50%;border:2px solid var(--line);background:#060d07;transition:.15s}
+.pin-dot.filled{background:var(--green-deep);border-color:var(--green-deep);box-shadow:0 0 12px rgba(0,230,118,.7)}
 .pin-dot.error{background:var(--red);border-color:var(--red)}
-.pin-keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px}
+.pin-keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
 .pin-key{
   background:#111d12;border:1px solid #1e3620;border-radius:14px;
-  padding:0;height:68px;font-size:26px;font-weight:500;color:#e0f0e3;
+  padding:0;height:72px;font-size:28px;font-weight:500;color:#e0f0e3;
   text-align:center;cursor:pointer;transition:.1s;user-select:none;
   font-family:var(--mono);display:flex;align-items:center;justify-content:center;
 }
 .pin-key:active{background:#1a2e1c;color:var(--green-deep);border-color:var(--green-deep)}
-.pin-key.del{color:var(--muted);font-size:20px}
-.pin-key.ok{background:var(--green-deep);color:#060d07;border-color:var(--green-deep);font-size:24px}
+.pin-key.del{color:var(--muted);font-size:22px}
+.pin-key.ok{background:var(--green-deep);color:#060d07;border-color:var(--green-deep);font-size:26px}
 .pin-key.ok:active{background:var(--green-mid)}
 #pin-cancel{
   width:100%;background:none;border:none;color:var(--muted);
-  font-size:12px;padding:8px;cursor:pointer;
+  font-size:14px;padding:10px;cursor:pointer;
 }
-#pin-err{font-size:11px;color:var(--red);text-align:center;min-height:16px;margin-bottom:6px}
+#pin-err{font-size:13px;color:var(--red);text-align:center;min-height:18px;margin-bottom:8px}
 
 /* ══ LOG ═══════════════════════════════════════════════════ */
 .log-day-hdr{
@@ -256,9 +258,9 @@ input,select,button,textarea{font-family:inherit}
 .log-item:last-child{border-bottom:none}
 .log-badge{background:var(--green-pale);color:var(--green-deep);padding:3px 7px;border-radius:5px;font-size:9px;font-weight:700;flex-shrink:0;font-family:var(--mono);border:1px solid rgba(0,230,118,.15)}
 .log-info{flex:1;min-width:0}
-.log-nm{font-size:12px;font-weight:600;color:var(--text)}
-.log-meta{font-size:10px;color:var(--muted)}
-.log-mm{font-size:14px;font-weight:700;color:var(--green-deep);flex-shrink:0;margin-right:4px;font-family:var(--mono)}
+.log-nm{font-size:14px;font-weight:600;color:var(--text)}
+.log-meta{font-size:12px;color:var(--muted)}
+.log-mm{font-size:16px;font-weight:700;color:var(--green-deep);flex-shrink:0;margin-right:4px;font-family:var(--mono)}
 .del-btn{background:var(--red-lt);border:1px solid rgba(255,82,82,.2);border-radius:5px;padding:5px 8px;font-size:11px;color:var(--red);font-weight:700;cursor:pointer;flex-shrink:0}
 .del-confirm{
   background:rgba(255,82,82,.06);border:1px solid rgba(255,82,82,.2);border-radius:8px;
@@ -356,6 +358,20 @@ function getUserName(){ return localStorage.getItem('rfUser')||'' }
   <!-- ── DASHBOARD ───────────────────────────────────────── -->
   <div id="page-dashboard" class="page act">
 
+    <!-- Sub-tabs -->
+    <div style="display:flex;gap:0;margin-bottom:12px;background:#0c1610;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden">
+      <button id="dtab-monthly" onclick="switchDashTab('monthly')"
+        style="flex:1;padding:9px 4px;border:none;background:rgba(0,230,118,.12);color:var(--green-deep);font-size:12px;font-weight:700;cursor:pointer;border-right:1px solid var(--line)">
+        📅 Monthly
+      </button>
+      <button id="dtab-yearly" onclick="switchDashTab('yearly')"
+        style="flex:1;padding:9px 4px;border:none;background:none;color:var(--muted);font-size:12px;font-weight:700;cursor:pointer">
+        📆 Yearly
+      </button>
+    </div>
+
+    <!-- ── MONTHLY PANEL ──────────────────────────────────── -->
+    <div id="dash-monthly">
     <div class="card">
       <div class="sec-title">🌡️ Latest Day Rainfall</div>
       <div id="latest-date-badge" class="date-badge">📅 Loading...</div>
@@ -419,6 +435,65 @@ function getUserName(){ return localStorage.getItem('rfUser')||'' }
         <div class="leg-item"><div class="leg-dot" style="background:#F59E0B"></div><span id="cmp-legend-b">Set B</span></div>
       </div>
     </div>
+
+    </div><!-- /#dash-monthly -->
+
+    <!-- ── YEARLY PANEL ───────────────────────────────────── -->
+    <div id="dash-yearly" style="display:none">
+
+      <div class="card">
+        <div class="sec-title">📆 Yearly Comparison</div>
+
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
+          <span style="font-size:11px;font-weight:700;background:rgba(93,184,255,.15);color:var(--rain);border:1px solid rgba(93,184,255,.3);border-radius:5px;padding:3px 9px;flex-shrink:0">Year A</span>
+          <select id="yr-a" class="fi" style="font-size:13px;padding:6px 9px" onchange="loadYearly()"></select>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px">
+          <span style="font-size:11px;font-weight:700;background:rgba(255,167,38,.12);color:var(--amber);border:1px solid rgba(255,167,38,.3);border-radius:5px;padding:3px 9px;flex-shrink:0">Year B</span>
+          <select id="yr-b" class="fi" style="font-size:13px;padding:6px 9px" onchange="loadYearly()"></select>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:12px;color:var(--muted);flex-shrink:0">Month</span>
+          <select id="yr-mfrom" class="fi" style="font-size:12px;padding:5px 7px" onchange="loadYearly()"></select>
+          <span style="color:var(--muted)">→</span>
+          <select id="yr-mto" class="fi" style="font-size:12px;padding:5px 7px" onchange="loadYearly()"></select>
+        </div>
+      </div>
+
+      <!-- Summary stats -->
+      <div id="yr-stats" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px"></div>
+
+      <!-- Chart card -->
+      <div class="card">
+        <div style="display:flex;gap:6px;margin-bottom:10px">
+          <button id="yrtab-mm"   onclick="setYrTab('mm')"   style="flex:1;padding:6px;border-radius:6px;border:1px solid rgba(0,230,118,.3);background:rgba(0,230,118,.12);color:var(--green-deep);font-size:11px;font-weight:700;cursor:pointer">Total mm</button>
+          <button id="yrtab-days" onclick="setYrTab('days')" style="flex:1;padding:6px;border-radius:6px;border:1px solid var(--line);background:none;color:var(--muted);font-size:11px;font-weight:700;cursor:pointer">Rain Days</button>
+        </div>
+        <div style="font-size:10px;color:var(--muted);margin-bottom:8px" id="yr-chart-lbl">Rainfall (mm) by month</div>
+        <div id="yr-bar-wrap" style="display:flex;align-items:flex-end;gap:3px;height:90px"></div>
+        <div id="yr-month-labels" style="display:flex;gap:3px;margin-top:3px"></div>
+        <div style="display:flex;gap:14px;margin-top:10px">
+          <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted)">
+            <div style="width:10px;height:10px;border-radius:2px;background:var(--rain)"></div>
+            <span id="yr-leg-a">Year A</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted)">
+            <div style="width:10px;height:10px;border-radius:2px;background:var(--amber)"></div>
+            <span id="yr-leg-b">Year B</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Station breakdown -->
+      <div class="card">
+        <div class="sec-title">🗺️ Station Breakdown</div>
+        <div id="yr-station-list">
+          <div class="loading"><div class="spinner"></div><span>Loading...</span></div>
+        </div>
+      </div>
+
+    </div><!-- /#dash-yearly -->
 
   </div>
 
@@ -1280,6 +1355,190 @@ function saveLineSettings() {
     .then(() => apiPost({ action: 'saveConfig', key: 'LINE_TARGET', value: target }))
     .then(() => showToast('✅ LINE settings saved', 'success'))
     .catch(err => showToast('❌ ' + err.message, 'error'));
+}
+
+// ═══════════════════════════════════════════════════════════
+// DASHBOARD SUB-TABS
+// ═══════════════════════════════════════════════════════════
+const MONTHS_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+let yrTab = 'mm';
+let yrDataA = null, yrDataB = null;
+
+function switchDashTab(t) {
+  const isYearly = t === 'yearly';
+  document.getElementById('dash-monthly').style.display = isYearly ? 'none' : 'block';
+  document.getElementById('dash-yearly').style.display  = isYearly ? 'block' : 'none';
+  document.getElementById('dtab-monthly').style.background = isYearly ? 'none' : 'rgba(0,230,118,.12)';
+  document.getElementById('dtab-monthly').style.color      = isYearly ? 'var(--muted)' : 'var(--green-deep)';
+  document.getElementById('dtab-yearly').style.background  = isYearly ? 'rgba(0,230,118,.12)' : 'none';
+  document.getElementById('dtab-yearly').style.color       = isYearly ? 'var(--green-deep)' : 'var(--muted)';
+  if (isYearly && !yrDataA) initYearly();
+}
+
+async function initYearly() {
+  // populate year selectors from available sheets
+  const curY = new Date().getFullYear();
+  let years = [curY];
+  try {
+    const res = await apiFetch({ action: 'getAvailableYears' });
+    if (res.years && res.years.length) years = res.years;
+  } catch(_) {}
+
+  ['yr-a','yr-b'].forEach((id, idx) => {
+    const sel = document.getElementById(id);
+    sel.innerHTML = '';
+    years.forEach((y, i) => {
+      const o = document.createElement('option');
+      o.value = y; o.textContent = y;
+      if (i === idx) o.selected = true;
+      sel.appendChild(o);
+    });
+  });
+
+  // month selectors Jan–Dec
+  ['yr-mfrom','yr-mto'].forEach((id, idx) => {
+    const sel = document.getElementById(id);
+    sel.innerHTML = '';
+    MONTHS_SHORT.forEach((m, i) => {
+      const o = document.createElement('option');
+      o.value = i + 1; o.textContent = m;
+      sel.appendChild(o);
+    });
+    sel.value = idx === 0 ? 1 : 12;
+  });
+
+  loadYearly();
+}
+
+async function loadYearly() {
+  const yA  = parseInt(document.getElementById('yr-a').value);
+  const yB  = parseInt(document.getElementById('yr-b').value);
+  const mF  = parseInt(document.getElementById('yr-mfrom').value);
+  const mT  = parseInt(document.getElementById('yr-mto').value);
+  const mFrom = Math.min(mF, mT);
+  const mTo   = Math.max(mF, mT);
+
+  document.getElementById('yr-station-list').innerHTML =
+    '<div class="loading"><div class="spinner"></div><span>Loading...</span></div>';
+  document.getElementById('yr-stats').innerHTML = '';
+  document.getElementById('yr-bar-wrap').innerHTML = '';
+
+  try {
+    [yrDataA, yrDataB] = await Promise.all([
+      apiFetch({ action:'getYearly', year:yA, monthFrom:mFrom, monthTo:mTo }),
+      apiFetch({ action:'getYearly', year:yB, monthFrom:mFrom, monthTo:mTo })
+    ]);
+    renderYearly(yA, yB);
+  } catch(err) {
+    document.getElementById('yr-station-list').innerHTML =
+      `<div class="empty-state" style="color:#E53935">⚠️ ${err.message}</div>`;
+  }
+}
+
+function setYrTab(t) {
+  yrTab = t;
+  const isM = t === 'mm';
+  const btnM = document.getElementById('yrtab-mm');
+  const btnD = document.getElementById('yrtab-days');
+  btnM.style.background   = isM ? 'rgba(0,230,118,.12)' : 'none';
+  btnM.style.color        = isM ? 'var(--green-deep)'  : 'var(--muted)';
+  btnM.style.borderColor  = isM ? 'rgba(0,230,118,.3)' : 'var(--line)';
+  btnD.style.background   = isM ? 'none' : 'rgba(0,230,118,.12)';
+  btnD.style.color        = isM ? 'var(--muted)' : 'var(--green-deep)';
+  btnD.style.borderColor  = isM ? 'var(--line)' : 'rgba(0,230,118,.3)';
+  if (yrDataA && yrDataB) renderYearly(
+    parseInt(document.getElementById('yr-a').value),
+    parseInt(document.getElementById('yr-b').value)
+  );
+}
+
+function renderYearly(yA, yB) {
+  const dA = yrDataA, dB = yrDataB;
+  document.getElementById('yr-leg-a').textContent = yA;
+  document.getElementById('yr-leg-b').textContent = yB;
+
+  // totals across range
+  const sumA  = dA.stations.reduce((s, st) => s + (dA.stationTotals[st.code]   || 0), 0) / dA.stations.length;
+  const sumB  = dB.stations.reduce((s, st) => s + (dB.stationTotals[st.code]   || 0), 0) / dB.stations.length;
+  const rdA   = dA.stations.reduce((s, st) => s + (dA.stationRainDays[st.code] || 0), 0) / dA.stations.length;
+  const rdB   = dB.stations.reduce((s, st) => s + (dB.stationRainDays[st.code] || 0), 0) / dB.stations.length;
+
+  document.getElementById('yr-stats').innerHTML = `
+    <div style="background:#060d07;border:1px solid var(--line);border-radius:8px;padding:10px">
+      <div style="font-size:22px;font-weight:300;color:var(--rain);font-family:var(--mono);line-height:1">${sumA.toFixed(1)}<span style="font-size:12px">mm</span></div>
+      <div style="font-size:10px;color:var(--muted);margin-top:3px">Avg total ${yA}</div>
+      <div style="font-size:11px;color:var(--rain);margin-top:2px;font-family:var(--mono)">${Math.round(rdA)} rain days</div>
+    </div>
+    <div style="background:#060d07;border:1px solid var(--line);border-radius:8px;padding:10px">
+      <div style="font-size:22px;font-weight:300;color:var(--amber);font-family:var(--mono);line-height:1">${sumB.toFixed(1)}<span style="font-size:12px">mm</span></div>
+      <div style="font-size:10px;color:var(--muted);margin-top:3px">Avg total ${yB}</div>
+      <div style="font-size:11px;color:var(--amber);margin-top:2px;font-family:var(--mono)">${Math.round(rdB)} rain days</div>
+    </div>`;
+
+  // chart
+  const useKey = yrTab === 'mm' ? 'totals' : 'rainDays';
+  document.getElementById('yr-chart-lbl').textContent =
+    yrTab === 'mm' ? 'Rainfall (mm) by month — avg all stations' : 'Rain days by month — avg all stations';
+
+  const monthsA = dA.months, monthsB = dB.months;
+  const n = Math.max(monthsA.length, monthsB.length);
+  const avgA = monthsA.map(m => {
+    const vals = dA.stations.map(s => m[useKey][s.code] || 0);
+    return vals.reduce((a,b)=>a+b,0) / vals.length;
+  });
+  const avgB = monthsB.map(m => {
+    const vals = dB.stations.map(s => m[useKey][s.code] || 0);
+    return vals.reduce((a,b)=>a+b,0) / vals.length;
+  });
+  const maxV = Math.max(...avgA, ...avgB, 1);
+
+  let bars = '', labels = '';
+  for (let i = 0; i < n; i++) {
+    const hA = Math.round((avgA[i] || 0) / maxV * 82);
+    const hB = Math.round((avgB[i] || 0) / maxV * 82);
+    const mn = MONTHS_SHORT[(monthsA[i] || monthsB[i]).month - 1];
+    bars   += `<div style="flex:1;display:flex;gap:1px;align-items:flex-end;justify-content:center">
+      <div style="width:9px;background:var(--rain);border-radius:2px 2px 0 0;height:${hA}px;min-height:2px"></div>
+      <div style="width:9px;background:var(--amber);border-radius:2px 2px 0 0;height:${hB}px;min-height:2px"></div>
+    </div>`;
+    labels += `<div style="flex:1;text-align:center;font-size:8px;color:var(--muted)">${mn}</div>`;
+  }
+  document.getElementById('yr-bar-wrap').innerHTML    = bars;
+  document.getElementById('yr-month-labels').innerHTML = labels;
+
+  // station list
+  const stations = dA.stations;
+  const maxSt = Math.max(
+    ...stations.map(s => Math.max(dA.stationTotals[s.code]||0, dB.stationTotals[s.code]||0)), 1
+  );
+  let html = '';
+  stations.forEach(s => {
+    const mmA  = dA.stationTotals[s.code]   || 0;
+    const mmB  = dB.stationTotals[s.code]   || 0;
+    const rdSA = dA.stationRainDays[s.code] || 0;
+    const rdSB = dB.stationRainDays[s.code] || 0;
+    const pA   = Math.round(mmA / maxSt * 100);
+    const pB   = Math.round(mmB / maxSt * 100);
+    html += `
+      <div style="display:flex;align-items:center;gap:6px;padding:7px 0;border-bottom:.5px solid var(--line)">
+        <div style="font-size:10px;font-weight:700;color:var(--green-deep);font-family:var(--mono);width:40px;flex-shrink:0">${s.code}</div>
+        <div style="font-size:10px;color:var(--muted);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${s.name}</div>
+        <div style="flex:2;display:flex;flex-direction:column;gap:3px">
+          <div style="background:var(--line);border-radius:2px;height:8px;overflow:hidden">
+            <div style="width:${pA}%;height:8px;background:var(--rain);border-radius:2px"></div>
+          </div>
+          <div style="background:var(--line);border-radius:2px;height:8px;overflow:hidden">
+            <div style="width:${pB}%;height:8px;background:var(--amber);border-radius:2px"></div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:2px;width:56px;text-align:right">
+          <div style="font-size:10px;color:var(--rain);font-family:var(--mono);font-weight:700">${mmA.toFixed(1)}<span style="font-size:8px;opacity:.6">mm ${rdSA}d</span></div>
+          <div style="font-size:10px;color:var(--amber);font-family:var(--mono)">${mmB.toFixed(1)}<span style="font-size:8px;opacity:.6">mm ${rdSB}d</span></div>
+        </div>
+      </div>`;
+  });
+  document.getElementById('yr-station-list').innerHTML = html ||
+    '<div class="empty-state">No data available</div>';
 }
 
 // ═══════════════════════════════════════════════════════════
