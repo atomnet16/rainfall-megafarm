@@ -1134,11 +1134,26 @@ function renderCompare() {
     ? (data.stationTotals[st.code]   || 0)
     : (data.stationRainDays[st.code] || 0);
   const maxVal = Math.max(...stations.flatMap(st => [getVal(cmpDataA,st), getVal(cmpDataB,st)]), 1);
-  let html = '';
+  const fmt = v => cmpTab === 'mm' ? v.toFixed(1) : v.toFixed(1) + 'd';
+
+  // เฉลี่ยทุกสถานี
+  const n = stations.length || 1;
+  const avgA = stations.reduce((s,st)=>s+getVal(cmpDataA,st),0) / n;
+  const avgB = stations.reduce((s,st)=>s+getVal(cmpDataB,st),0) / n;
+  const apA = Math.round(avgA / maxVal * 100), apB = Math.round(avgB / maxVal * 100);
+
+  let html = `<div class="cbar-row" style="background:rgba(0,230,118,.08);border-radius:8px;border:1px solid rgba(0,230,118,.25)">
+      <div class="cbar-stn" style="color:var(--green)">⌀ เฉลี่ย<br><small>ทุกสถานี</small></div>
+      <div class="cbar-col">
+        <div class="cbar-bg"><div class="cbar-a" style="width:${apA}%"></div></div>
+        <div class="cbar-bg"><div class="cbar-b" style="width:${apB}%"></div></div>
+      </div>
+      <div class="cbar-vals"><span class="val-a">${fmt(avgA)}</span><span class="val-b">${fmt(avgB)}</span></div>
+    </div>`;
+
   stations.forEach(st => {
     const vA = getVal(cmpDataA, st), vB = getVal(cmpDataB, st);
     const pA = Math.round(vA / maxVal * 100), pB = Math.round(vB / maxVal * 100);
-    const fmt = v => cmpTab === 'mm' ? v.toFixed(1) : v + 'd';
     html += `<div class="cbar-row">
       <div class="cbar-stn">${st.code}<br><small>${st.name}</small></div>
       <div class="cbar-col">
