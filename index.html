@@ -409,21 +409,45 @@ function getUserName(){ return localStorage.getItem('rfUser')||'' }
     <div class="card">
       <div class="sec-title">⚖️ Compare Data</div>
 
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
-        <span style="font-size:12px;color:var(--muted);flex-shrink:0">Month</span>
-        <select id="cmp-mfrom" class="fi" style="font-size:12px;padding:5px 7px"></select>
-        <span style="color:var(--muted)">→</span>
-        <select id="cmp-mto" class="fi" style="font-size:12px;padding:5px 7px"></select>
+      <div class="ctab-row" style="margin-bottom:10px">
+        <button class="ctab act" data-mode="period" onclick="switchCmpMode('period')">📊 ช่วงเดียวกัน 2 ปี</button>
+        <button class="ctab" data-mode="m2m" onclick="switchCmpMode('m2m')">📅 เดือน vs เดือน</button>
       </div>
 
-      <div class="cmp-slots">
-        <div class="cmp-slot slot-a">
-          <div class="cmp-slot-label">Year A</div>
-          <select id="cmp-ya" style="width:100%;border:1px solid var(--line);border-radius:5px;padding:5px;font-size:13px;color:var(--text);background:#0a1409;margin-top:3px"></select>
+      <!-- โหมด 2.2: ช่วงเดือนเดียวกัน เทียบ 2 ปี -->
+      <div id="cmp-mode-period">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+          <span style="font-size:12px;color:var(--muted);flex-shrink:0">Month</span>
+          <select id="cmp-mfrom" class="fi" style="font-size:12px;padding:5px 7px"></select>
+          <span style="color:var(--muted)">→</span>
+          <select id="cmp-mto" class="fi" style="font-size:12px;padding:5px 7px"></select>
         </div>
-        <div class="cmp-slot slot-b">
-          <div class="cmp-slot-label">Year B</div>
-          <select id="cmp-yb" style="width:100%;border:1px solid var(--line);border-radius:5px;padding:5px;font-size:13px;color:var(--text);background:#0a1409;margin-top:3px"></select>
+
+        <div class="cmp-slots">
+          <div class="cmp-slot slot-a">
+            <div class="cmp-slot-label">Year A</div>
+            <select id="cmp-ya" style="width:100%;border:1px solid var(--line);border-radius:5px;padding:5px;font-size:13px;color:var(--text);background:#0a1409;margin-top:3px"></select>
+          </div>
+          <div class="cmp-slot slot-b">
+            <div class="cmp-slot-label">Year B</div>
+            <select id="cmp-yb" style="width:100%;border:1px solid var(--line);border-radius:5px;padding:5px;font-size:13px;color:var(--text);background:#0a1409;margin-top:3px"></select>
+          </div>
+        </div>
+      </div>
+
+      <!-- โหมด 2.1: เดือน vs เดือน เลือกอิสระทั้ง 2 ฝั่ง -->
+      <div id="cmp-mode-m2m" style="display:none">
+        <div class="cmp-slots">
+          <div class="cmp-slot slot-a">
+            <div class="cmp-slot-label">Set A</div>
+            <select id="cmp-a-month" style="width:100%;border:1px solid var(--line);border-radius:5px;padding:5px;font-size:13px;color:var(--text);background:#0a1409;margin-top:3px"></select>
+            <select id="cmp-a-year" style="width:100%;border:1px solid var(--line);border-radius:5px;padding:5px;font-size:13px;color:var(--text);background:#0a1409;margin-top:5px"></select>
+          </div>
+          <div class="cmp-slot slot-b">
+            <div class="cmp-slot-label">Set B</div>
+            <select id="cmp-b-month" style="width:100%;border:1px solid var(--line);border-radius:5px;padding:5px;font-size:13px;color:var(--text);background:#0a1409;margin-top:3px"></select>
+            <select id="cmp-b-year" style="width:100%;border:1px solid var(--line);border-radius:5px;padding:5px;font-size:13px;color:var(--text);background:#0a1409;margin-top:5px"></select>
+          </div>
         </div>
       </div>
       <button class="btn btn-primary" onclick="runCompare()" style="padding:10px;margin-bottom:2px">
@@ -705,6 +729,7 @@ let autoRefreshTimer = null;
 let viewYear  = new Date().getFullYear();
 let viewMonth = new Date().getMonth() + 1;
 let cmpTab    = 'mm';
+let cmpMode   = 'period'; // 'period' = ช่วงเดียวกัน 2 ปี | 'm2m' = เดือน vs เดือน
 let cmpDataA  = null, cmpDataB = null;
 
 // ═══════════════════════════════════════════════════════════
@@ -1010,58 +1035,90 @@ function renderMonthlyTable(data) {
 function initCompareSelectors() {
   const curY = new Date().getFullYear();
   const now  = new Date();
-
-  // Month range selectors (shared)
-  ['cmp-mfrom','cmp-mto'].forEach((id, idx) => {
-    const sel = document.getElementById(id);
-    MONTHS_FULL.slice(1).forEach((m, i) => {
-      const o = document.createElement('option');
-      o.value = i + 1; o.textContent = m; sel.appendChild(o);
-    });
-    sel.value = now.getMonth() + 1;
+  const fillMonths = sel => MONTHS_FULL.slice(1).forEach((m, i) => {
+    const o = document.createElement('option');
+    o.value = i + 1; o.textContent = m; sel.appendChild(o);
   });
+  const fillYears = sel => { for (let y = curY; y >= 2025; y--) {
+    const o = document.createElement('option');
+    o.value = y; o.textContent = y; sel.appendChild(o);
+  } };
 
-  // Year selectors
+  // ── โหมด period: month range + Year A/B ──
+  ['cmp-mfrom','cmp-mto'].forEach(id => {
+    const sel = document.getElementById(id);
+    fillMonths(sel); sel.value = now.getMonth() + 1;
+  });
   ['cmp-ya','cmp-yb'].forEach((id, idx) => {
     const sel = document.getElementById(id);
-    for (let y = curY; y >= 2025; y--) {
-      const o = document.createElement('option');
-      o.value = y; o.textContent = y; sel.appendChild(o);
-    }
-    sel.value = idx === 0 ? curY : curY - 1;
+    fillYears(sel); sel.value = idx === 0 ? curY : curY - 1;
   });
+
+  // ── โหมด m2m: Set A/B = เดือน+ปี อิสระ ──
+  ['cmp-a-month','cmp-b-month'].forEach(id => {
+    const sel = document.getElementById(id);
+    fillMonths(sel); sel.value = now.getMonth() + 1;
+  });
+  ['cmp-a-year','cmp-b-year'].forEach((id, idx) => {
+    const sel = document.getElementById(id);
+    fillYears(sel); sel.value = idx === 0 ? curY : curY - 1;
+  });
+}
+
+function switchCmpMode(mode) {
+  cmpMode = mode;
+  document.querySelectorAll('.ctab[data-mode]').forEach(el =>
+    el.classList.toggle('act', el.dataset.mode === mode));
+  document.getElementById('cmp-mode-period').style.display = mode === 'period' ? '' : 'none';
+  document.getElementById('cmp-mode-m2m').style.display    = mode === 'm2m'    ? '' : 'none';
+  // ล้างผลเดิม กันสับสนข้ามโหมด
+  cmpDataA = cmpDataB = null;
+  document.getElementById('cmp-result').innerHTML =
+    '<div class="empty-state" style="padding:20px">Select datasets and press Compare</div>';
+  document.getElementById('cmp-legend').style.display = 'none';
 }
 
 function setCmpTab(t) {
   cmpTab = t;
-  document.querySelectorAll('.ctab').forEach(el =>
+  document.querySelectorAll('.ctab[data-tab]').forEach(el =>
     el.classList.toggle('act', el.dataset.tab === t));
   if (cmpDataA && cmpDataB) renderCompare();
 }
 
 async function runCompare() {
-  const yA   = parseInt(document.getElementById('cmp-ya').value);
-  const yB   = parseInt(document.getElementById('cmp-yb').value);
-  const mF   = parseInt(document.getElementById('cmp-mfrom').value);
-  const mT   = parseInt(document.getElementById('cmp-mto').value);
-  const mFrom = Math.min(mF, mT);
-  const mTo   = Math.max(mF, mT);
+  let reqA, reqB, labelA, labelB;
+
+  if (cmpMode === 'm2m') {
+    const mA = parseInt(document.getElementById('cmp-a-month').value);
+    const yA = parseInt(document.getElementById('cmp-a-year').value);
+    const mB = parseInt(document.getElementById('cmp-b-month').value);
+    const yB = parseInt(document.getElementById('cmp-b-year').value);
+    reqA = { action:'getYearly', year:yA, monthFrom:mA, monthTo:mA };
+    reqB = { action:'getYearly', year:yB, monthFrom:mB, monthTo:mB };
+    labelA = `${MONTHS_TH[mA]} ${yA}`;
+    labelB = `${MONTHS_TH[mB]} ${yB}`;
+  } else {
+    const yA = parseInt(document.getElementById('cmp-ya').value);
+    const yB = parseInt(document.getElementById('cmp-yb').value);
+    const mF = parseInt(document.getElementById('cmp-mfrom').value);
+    const mT = parseInt(document.getElementById('cmp-mto').value);
+    const mFrom = Math.min(mF, mT);
+    const mTo   = Math.max(mF, mT);
+    const rangeLabel = mFrom === mTo ? MONTHS_TH[mFrom] : `${MONTHS_TH[mFrom]}–${MONTHS_TH[mTo]}`;
+    reqA = { action:'getYearly', year:yA, monthFrom:mFrom, monthTo:mTo };
+    reqB = { action:'getYearly', year:yB, monthFrom:mFrom, monthTo:mTo };
+    labelA = `${rangeLabel} ${yA}`;
+    labelB = `${rangeLabel} ${yB}`;
+  }
 
   document.getElementById('cmp-result').innerHTML =
     '<div class="loading"><div class="spinner"></div><span>Loading...</span></div>';
   document.getElementById('cmp-legend').style.display = 'none';
 
-  const rangeLabel = mFrom === mTo
-    ? MONTHS_TH[mFrom]
-    : `${MONTHS_TH[mFrom]}–${MONTHS_TH[mTo]}`;
-
   try {
-    [cmpDataA, cmpDataB] = await Promise.all([
-      apiFetch({ action:'getYearly', year:yA, monthFrom:mFrom, monthTo:mTo }),
-      apiFetch({ action:'getYearly', year:yB, monthFrom:mFrom, monthTo:mTo })
-    ]);
-    document.getElementById('cmp-legend-a').textContent = `${rangeLabel} ${yA}`;
-    document.getElementById('cmp-legend-b').textContent = `${rangeLabel} ${yB}`;
+    [cmpDataA, cmpDataB] = await Promise.all([ apiFetch(reqA), apiFetch(reqB) ]);
+    document.getElementById('cmp-legend-a').textContent = labelA;
+    document.getElementById('cmp-legend-b').textContent = labelB;
     document.getElementById('cmp-legend').style.display = 'flex';
     renderCompare();
   } catch(err) {

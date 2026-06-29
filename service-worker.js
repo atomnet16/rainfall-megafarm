@@ -1,4 +1,4 @@
-const CACHE = 'rainfall-v1';
+const CACHE = 'rainfall-v2';
 const SHELL = [
   '/rainfall-megafarm/',
   '/rainfall-megafarm/index.html',
