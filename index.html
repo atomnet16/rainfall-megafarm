@@ -1018,7 +1018,7 @@ function initCompareSelectors() {
       const o = document.createElement('option');
       o.value = i + 1; o.textContent = m; sel.appendChild(o);
     });
-    sel.value = idx === 0 ? 1 : now.getMonth() + 1;
+    sel.value = now.getMonth() + 1;
   });
 
   // Year selectors
